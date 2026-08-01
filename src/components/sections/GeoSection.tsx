@@ -97,15 +97,31 @@ export default function GeoSection() {
   const apr = project(active.lat, active.lon);
   const ap = { x: apr.x + (active.dx ?? 0), y: apr.y + (active.dy ?? 0) };
 
-  /* м'яка дуга будинок → POI (перпендикулярний прогин) */
+  /* маршрут будинок → POI: по дорогах (вейпойнти зі згладжуванням);
+     фолбек — м'яка дуга з перпендикулярним прогином */
   const arc = useMemo(() => {
+    if (active.route && active.route.length) {
+      const pts: [number, number][] = [[h.x, h.y], ...active.route];
+      if (pts.length === 2)
+        return `M ${pts[0][0]} ${pts[0][1]} L ${pts[1][0]} ${pts[1][1]}`;
+      /* midpoint-quadratic: кути вейпойнтів стають плавними поворотами */
+      let d = `M ${pts[0][0]} ${pts[0][1]}`;
+      for (let i = 1; i < pts.length - 1; i++) {
+        const [x1, y1] = pts[i];
+        const [x2, y2] = pts[i + 1];
+        const last = i === pts.length - 2;
+        d += ` Q ${x1} ${y1} ${last ? x2 : (x1 + x2) / 2} ${last ? y2 : (y1 + y2) / 2}`;
+      }
+      return d;
+    }
     const dx = ap.x - h.x, dy = ap.y - h.y;
     const len = Math.hypot(dx, dy) || 1;
     const k = Math.min(42, len * 0.18);
     const cx = (h.x + ap.x) / 2 - (dy / len) * k;
     const cy = (h.y + ap.y) / 2 + (dx / len) * k;
     return `M ${h.x} ${h.y} Q ${cx} ${cy} ${ap.x} ${ap.y}`;
-  }, [ap.x, ap.y, h.x, h.y]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeId, ap.x, ap.y, h.x, h.y]);
 
   const pick = (id: string, fromMap = false) => {
     if (fromMap && suppressClick.current) return;

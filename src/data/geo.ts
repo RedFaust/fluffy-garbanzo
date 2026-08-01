@@ -24,6 +24,9 @@ export interface Poi {
   dy?: number;
   /** фото об'єкта (WebP 720×450 у public/media/geo/) + атрибуція ліцензії */
   img?: { src: string; credit: string };
+  /** маршрут ПО ДОРОГАХ: вейпойнти в SVG-координатах (без будинку-старту),
+      останній = позиція точки; без route — коротка пряма */
+  route?: [number, number][];
   name: { de: string; en: string };
   desc: { de: string; en: string };
 }
@@ -54,6 +57,7 @@ export const POIS: Poi[] = [
     min: 13,
     mode: "foot",
     img: { src: "/media/geo/badestelle.webp", credit: "Foto: Lienhard Schulz · CC BY-SA 3.0 (Wikimedia)" },
+    route: [[466, 447], [465, 440]],
     name: { de: "Naturbadestelle Wolziger See", en: "Lake Wolzig bathing spot" },
     desc: {
       de: "Sandstrand, Liegewiese, amtlich überwachte Wasserqualität: der größte See des Naturparks (5,5 km²) liegt einen Spaziergang entfernt. Morgens schwimmen, ohne das Auto zu bewegen.",
@@ -70,6 +74,7 @@ export const POIS: Poi[] = [
     min: 15,
     mode: "foot",
     img: { src: "/media/geo/langersee.webp", credit: "Foto: Hedwig Storch · CC BY-SA 4.0 (Wikimedia)" },
+    route: [[459, 451], [450, 448]],
     name: { de: "Langer See & Dahme", en: "Langer See & Dahme" },
     desc: {
       de: "Die Villa liegt auf der Landenge zwischen zwei Seen. Über den Langen See und die Dahme führt der Wasserweg bis nach Berlin — mit dem eigenen Boot bis Köpenick.",
@@ -86,6 +91,7 @@ export const POIS: Poi[] = [
     min: 6,
     mode: "car",
     img: { src: "/media/geo/blossin.webp", credit: "Foto: Lienhard Schulz · CC BY-SA 3.0 (Wikimedia)" },
+    route: [[464, 438], [466, 423]],
     name: { de: "Wassersportzentrum Blossin", en: "Blossin water-sports centre" },
     desc: {
       de: "Eines der größten Wassersportzentren Brandenburgs, am selben See: Segelschule, Windsurfen, SUP und Marina. Segelkurse für die Kinder, Liegeplatz fürs Boot.",
@@ -102,6 +108,7 @@ export const POIS: Poi[] = [
     min: 5,
     mode: "car",
     img: { src: "/media/geo/naturpark.webp", credit: "Foto: Jochen Teufel · CC BY-SA 3.0 (Wikimedia)" },
+    route: [[455, 462], [440, 470], [432, 475]],
     name: { de: "Naturpark Dahme-Heideseen", en: "Dahme-Heideseen nature park" },
     desc: {
       de: "594 km² Wald und über 100 Seen als geschützte Kulisse — das Anwesen steht mitten darin. Der 66-Seen-Wanderweg und der Rundweg um den Wolziger See beginnen praktisch vor der Tür.",
@@ -120,6 +127,7 @@ export const POIS: Poi[] = [
     min: 12,
     mode: "car",
     img: { src: "/media/geo/a12.webp", credit: "Foto: Felouch Kotek · CC BY-SA 4.0 (Wikimedia)" },
+    route: [[463, 452], [428, 408], [452, 374], [444, 338]],
     name: { de: "A12 · Anschluss Friedersdorf", en: "A12 · Friedersdorf ramp" },
     desc: {
       de: "Von der Anschlussstelle Friedersdorf in fünf Minuten auf den Berliner Ring (A10) — oder ostwärts Richtung Frankfurt (Oder). Schnell weg, ohne Durchgangsverkehr im Dorf.",
@@ -137,6 +145,7 @@ export const POIS: Poi[] = [
     mode: "car",
     anchor: true,
     img: { src: "/media/geo/storkow.webp", credit: "Foto: Lienhard Schulz · CC BY-SA 3.0 (Wikimedia)" },
+    route: [[478, 432], [498, 411], [540, 424], [573, 433]],
     name: { de: "Bahnhof Storkow (RB36)", en: "Storkow station (RB36)" },
     desc: {
       de: "Die RB36 fährt stündlich nach Königs Wusterhausen mit Anschluss an S-Bahn und Regionalexpress nach Berlin — pendeln aus der Seenlandschaft, ganz ohne Stau.",
@@ -153,6 +162,7 @@ export const POIS: Poi[] = [
     min: 23,
     mode: "car",
     img: { src: "/media/geo/kw.webp", credit: "Foto: V.Boldychev · CC BY-SA 4.0 (Wikimedia)" },
+    route: [[463, 452], [428, 408], [380, 395], [340, 382], [311, 371]],
     name: { de: "Bf. Königs Wusterhausen", en: "Königs Wusterhausen station" },
     desc: {
       de: "RE2 und S46 bringen Sie in rund 30 Minuten nach Berlin; der neue RE20 fährt direkt zum BER und zum Hauptbahnhof. Und Bus 723 hält dafür mitten in Kolberg.",
@@ -170,6 +180,7 @@ export const POIS: Poi[] = [
     mode: "car",
     anchor: true,
     img: { src: "/media/geo/tesla.webp", credit: "Foto: Ot · CC BY 4.0 (Wikimedia)" },
+    route: [[463, 452], [428, 408], [452, 374], [444, 338], [421, 277], [450, 264], [455, 228]],
     name: { de: "Tesla Gigafactory", en: "Tesla Gigafactory" },
     desc: {
       de: "Einer der größten Arbeitgeber Brandenburgs — über 11.000 Arbeitsplätze — liegt 26 Minuten entfernt. Das sichert Nachfrage und Wertentwicklung, während Kolberg still bleibt.",
@@ -187,6 +198,7 @@ export const POIS: Poi[] = [
     mode: "car",
     anchor: true,
     img: { src: "/media/geo/ber.webp", credit: "Foto: Antony-22 · CC BY-SA 4.0 (Wikimedia)" },
+    route: [[463, 452], [428, 408], [452, 374], [444, 338], [421, 277], [340, 300], [261, 297], [206, 275]],
     name: { de: "Flughafen BER", en: "BER airport" },
     desc: {
       de: "Über A12 und Berliner Ring zum Hauptstadtflughafen — ideal für Vielflieger und internationale Gäste. Und über dem See ist nie ein Flugzeug zu hören.",
@@ -203,6 +215,7 @@ export const POIS: Poi[] = [
     min: 55,
     mode: "car",
     img: { src: "/media/geo/berlin.webp", credit: "Foto: dronepicr · CC BY 2.0 (Wikimedia)" },
+    route: [[463, 452], [428, 408], [452, 374], [444, 338], [421, 277], [340, 300], [261, 297], [230, 230], [180, 140], [118, 54]],
     name: { de: "Berlin-Mitte", en: "Berlin Mitte" },
     desc: {
       de: "Kultur, Restaurants, Geschäftstermine — nah genug für den Abend in der Stadt, weit genug für absolute Ruhe am See.",
@@ -223,6 +236,7 @@ export const POIS: Poi[] = [
     dx: 8,
     dy: -4,
     img: { src: "/media/geo/einkauf.webp", credit: "Foto: C.-J. Dickow · CC BY-SA 3.0 (Wikimedia)" },
+    route: [[463, 452], [428, 408], [452, 374], [462, 370]],
     name: { de: "EDEKA & Bäckerei Friedersdorf", en: "EDEKA & bakery, Friedersdorf" },
     desc: {
       de: "Vollsortiment, Feinbäckerei Heider und Sparkasse an einem Standort — der Wocheneinkauf ist eine kurze Fahrt. Lidl und Netto ergänzen in Storkow (13 Min.).",
@@ -240,6 +254,7 @@ export const POIS: Poi[] = [
     mode: "car",
     dx: -8,
     img: { src: "/media/geo/aerzte.webp", credit: "Foto: Dguendel · CC BY 4.0 (Wikimedia)" },
+    route: [[463, 452], [428, 408], [446, 377], [442, 375]],
     name: { de: "Ärzte & Apotheke Friedersdorf", en: "Doctors & pharmacy, Friedersdorf" },
     desc: {
       de: "Margareten-Apotheke und zwei Hausarztpraxen liegen keine 100 Meter auseinander — Arzttermin und Rezept in einem Weg.",
@@ -257,6 +272,7 @@ export const POIS: Poi[] = [
     mode: "car",
     dy: 9,
     img: { src: "/media/geo/schule.webp", credit: "Foto: JCIV · CC BY-SA 4.0 (Wikimedia)" },
+    route: [[463, 452], [428, 408], [451, 386]],
     name: { de: "Grund- & Oberschule Friedersdorf", en: "School (grades 1–10), Friedersdorf" },
     desc: {
       de: "Klasse 1 bis 10 an einem Standort, zehn Minuten vom Haus. Kitas im Nachbarort Wolzig, Gymnasien in Königs Wusterhausen.",
@@ -273,6 +289,7 @@ export const POIS: Poi[] = [
     min: 26,
     mode: "car",
     img: { src: "/media/geo/klinikum.webp", credit: "Foto: Bildarbeiter · CC BY-SA 4.0 (Wikimedia)" },
+    route: [[463, 452], [428, 408], [380, 395], [340, 382], [311, 371], [309, 361]],
     name: { de: "Achenbach-Krankenhaus (KW)", en: "Achenbach hospital (KW)" },
     desc: {
       de: "267 Betten, neun Fachabteilungen, Notaufnahme: vollwertige stationäre Versorgung in verlässlicher Distanz.",
@@ -293,6 +310,7 @@ export const POIS: Poi[] = [
     dx: -6,
     dy: 8,
     img: { src: "/media/geo/dorfkrug.webp", credit: "Foto: kaffeeeinstein · CC BY-SA 2.0 (Wikimedia)" },
+    route: [[459, 453]],
     name: { de: "Alter Dorfkrug Kolberg", en: "Alter Dorfkrug, Kolberg" },
     desc: {
       de: "Das eigene Dorfgasthaus mit deutscher Küche, keine 700 Meter von der Haustür. Für den Sonntag: das Waldrestaurant am Tiefen See, sechs Autominuten.",
@@ -310,6 +328,7 @@ export const POIS: Poi[] = [
     mode: "car",
     anchor: true,
     img: { src: "/media/geo/therme.webp", credit: "Foto: Sören Kusch · CC BY-SA 3.0 (Wikimedia)" },
+    route: [[478, 432], [498, 411], [540, 424], [573, 433], [625, 408], [692, 379]],
     name: { de: "SaarowTherme · Bad Saarow", en: "SaarowTherme · Bad Saarow" },
     desc: {
       de: "Thermalsole, Saunawelt, Seeblick: der bekannteste Kurort östlich von Berlin ist Ihr Wellness-Refugium — eine halbe Stunde entfernt.",
@@ -326,6 +345,7 @@ export const POIS: Poi[] = [
     min: 27,
     mode: "car",
     img: { src: "/media/geo/golf.webp", credit: "Foto: Goldmull · CC BY-SA 4.0 (Wikimedia)" },
+    route: [[478, 432], [498, 411], [540, 424], [573, 433], [620, 448], [674, 451]],
     name: { de: "Golfresort Bad Saarow · A-ROSA", en: "Bad Saarow golf resort · A-ROSA" },
     desc: {
       de: "63 Löcher — Deutschlands größtes Golfresort mit Faldo- und Palmer-Course, dazu das 5-Sterne-A-ROSA am Scharmützelsee, dem „Märkischen Meer“.",
@@ -342,6 +362,7 @@ export const POIS: Poi[] = [
     min: 42,
     mode: "car",
     img: { src: "/media/geo/tropical.webp", credit: "Foto: Gerd Danigel · CC BY-SA 4.0 (Wikimedia)" },
+    route: [[455, 462], [432, 478], [398, 530], [348, 583], [362, 640], [378, 700], [415, 735]],
     name: { de: "Tropical Islands", en: "Tropical Islands" },
     desc: {
       de: "Das größte Indoor-Tropenresort der Welt: Südsee-Feeling an 365 Tagen — mit Kindern oder Gästen ein halber Tag Urlaub.",
@@ -419,6 +440,18 @@ export const BROADS: string[] = [
   "M 432 478 C 446 468, 456 460, 463 452 C 478 436, 490 422, 498 411 C 510 396, 530 372, 552 352",
   /* Friedersdorf → Bindow → Kolberg (шлях від A12 у село) */
   "M 452 374 C 436 390, 420 408, 440 430 C 450 440, 458 446, 463 452",
+  /* L74: Wolzig → Storkow */
+  "M 498 411 C 525 415, 550 424, 573 433",
+  /* Storkow → Bad Saarow (до Therme) */
+  "M 573 433 C 615 420, 655 398, 692 379",
+  /* Storkow → Wendisch Rietz → гольф-резорт */
+  "M 573 433 C 600 445, 640 452, 674 451",
+  /* Bindow → Senzig → Königs Wusterhausen */
+  "M 428 408 C 395 402, 355 390, 311 371",
+  /* Prieros → Halbe → A13 (на південь) */
+  "M 432 478 C 410 515, 380 555, 348 585",
+  /* A113: Schönefelder Kreuz → Берлін */
+  "M 261 297 C 235 235, 200 150, 130 66",
 ];
 
 /** Залізниці (пунктир) */
