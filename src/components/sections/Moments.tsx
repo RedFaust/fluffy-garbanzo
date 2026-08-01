@@ -94,11 +94,13 @@ function MomentsPinned() {
       if (performance.now() < lockUntil.current) return;
       const norm = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaMode === 2 ? e.deltaY * window.innerHeight : e.deltaY;
       if (Math.abs(norm) < 3) return;
-      lockUntil.current = performance.now() + 900;
+      /* назад — удвічі швидше: повертатись має бути легко */
+      const back = dir < 0;
+      lockUntil.current = performance.now() + (back ? 450 : 900);
       const top = r.top + window.scrollY;
       const target = top + ((i + dir + 0.5) / T) * (sec.offsetHeight - window.innerHeight);
       const lenis = (window as unknown as { __lenis?: { scrollTo: (t: number, o?: object) => void } }).__lenis;
-      if (lenis) lenis.scrollTo(target, { duration: 0.9, lock: true });
+      if (lenis) lenis.scrollTo(target, { duration: back ? 0.45 : 0.9, lock: true });
       else window.scrollTo({ top: target, behavior: "smooth" });
     };
     window.addEventListener("wheel", onWheel, { passive: false, capture: true });

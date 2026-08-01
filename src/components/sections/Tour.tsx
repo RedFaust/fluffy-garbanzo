@@ -143,9 +143,11 @@ function PinnedTour() {
          БУДЬ-ЯКИЙ помітний рух колеса перемикає рівно один слайд */
       const norm = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaMode === 2 ? e.deltaY * window.innerHeight : e.deltaY;
       if (Math.abs(norm) < 3) return;
-      lockUntil.current = performance.now() + 900;
+      /* назад — удвічі швидше: повертатись має бути легко */
+      const back = dir < 0;
+      lockUntil.current = performance.now() + (back ? 450 : 900);
       /* тривалість = лок: рух безперервний, без «замирання» в кінці */
-      scrollToIndex(i + dir, 0.9);
+      scrollToIndex(i + dir, back ? 0.45 : 0.9);
     };
     window.addEventListener("wheel", onWheel, { passive: false, capture: true });
     return () => window.removeEventListener("wheel", onWheel, { capture: true });
