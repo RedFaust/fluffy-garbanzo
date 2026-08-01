@@ -3330,6 +3330,45 @@ html.has-cursor * {
 .cursor--hand .cursor__ring {
   opacity: 0;
 }
+/* стрілки-підказки обабіч руки: гортати можна вліво/вправо */
+.cursor__harrow {
+  position: absolute;
+  translate: -50% -50%;
+  display: grid;
+  place-items: center;
+  color: #d9a93e;
+  filter: drop-shadow(0 1px 2px rgba(20, 14, 6, 0.85));
+  opacity: 0;
+  transition: opacity 0.18s;
+  pointer-events: none;
+}
+.cursor__harrow--l {
+  left: -27px;
+}
+.cursor__harrow--r {
+  left: 27px;
+}
+.cursor--hand .cursor__harrow {
+  opacity: 0.95;
+}
+.cursor--hand .cursor__harrow--l {
+  animation: harrow-l 1.6s ease-in-out infinite;
+}
+.cursor--hand .cursor__harrow--r {
+  animation: harrow-r 1.6s ease-in-out infinite;
+}
+/* під час перетягування підказка не потрібна */
+.cursor--hand.cursor--down .cursor__harrow {
+  opacity: 0;
+}
+@keyframes harrow-l {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(-5px); }
+}
+@keyframes harrow-r {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(5px); }
+}
 /* спалах при кліку */
 .cursor-burst {
   position: fixed;

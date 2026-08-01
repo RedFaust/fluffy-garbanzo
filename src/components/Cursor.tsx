@@ -8,6 +8,7 @@
  */
 import { useEffect, useState } from "react";
 import { motion, useMotionValue, useReducedMotion } from "motion/react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useT } from "../lib/i18n";
 
 type Mode = "default" | "hot" | "hand";
@@ -120,7 +121,14 @@ export default function Cursor() {
         <i className="cursor__dot" />
         <i className="cursor__ring" />
         <span className="cursor__label">{t.clickCue}</span>
+        {/* стрілки обабіч руки: видно, що можна гортати вліво/вправо */}
+        <span className="cursor__harrow cursor__harrow--l" aria-hidden="true">
+          <ChevronLeft size={17} strokeWidth={3} />
+        </span>
         <HandGlyph />
+        <span className="cursor__harrow cursor__harrow--r" aria-hidden="true">
+          <ChevronRight size={17} strokeWidth={3} />
+        </span>
       </motion.div>
       {burst && (
         <span
