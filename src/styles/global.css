@@ -1,0 +1,217 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Anwesen am Kolberg — дизайн-система
+   Кінематографічний «quiet luxury»: північ → день → золота година
+   ═══════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Палітра */
+  --bg: #0a0d16; /* північ — базовий фон */
+  --bg-2: #0e1220;
+  --panel: #121828;
+  --cream: #f1ebdf; /* денні секції */
+  --cream-2: #e8dfcf;
+  --ink: #161b28; /* текст на кремі */
+  --ink-soft: #3c4356;
+  --gold: #c4a15f;
+  --gold-2: #dfc28a;
+  --gold-dim: #8a7344;
+  --text: #f0ece2; /* текст на темному */
+  --muted: #aab1c2;
+  --muted-2: #838b9e;
+  --line: rgba(236, 231, 220, 0.1);
+  --line-dark: rgba(22, 27, 40, 0.14);
+
+  /* Типографіка */
+  --font-display: "Fraunces Variable", "Times New Roman", serif;
+  --font-body: "Instrument Sans Variable", "Helvetica Neue", sans-serif;
+
+  /* Ритм */
+  --space-xs: 0.5rem;
+  --space-s: 1rem;
+  --space-m: 1.5rem;
+  --space-l: 2.5rem;
+  --space-xl: 4rem;
+  --space-2xl: 7rem;
+  --gutter: clamp(1.25rem, 4vw, 3.5rem);
+  --max-w: 84rem;
+
+  /* Анімація */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-luxe: cubic-bezier(0.65, 0, 0.15, 1);
+
+  --nav-h: 4.25rem;
+}
+
+/* ── Reset ─────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: auto; /* Lenis керує скролом */
+  -webkit-text-size-adjust: 100%;
+}
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.6;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: clip;
+  min-height: 100svh;
+}
+
+img,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+input,
+textarea {
+  font: inherit;
+}
+
+::selection {
+  background: var(--gold);
+  color: var(--bg);
+}
+
+/* ── Плівкове зерно поверх усього ──────────────────────────────── */
+/* статичний шум: без анімації — нуль перекомпозицій, вигляд той самий */
+.grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2000;
+  opacity: 0.045;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+}
+
+/* ── Типографічні ролі ─────────────────────────────────────────── */
+.display {
+  font-family: var(--font-display);
+  /* opsz — АВТО (примусовий 100 давав волосяні штрихи на малих кеглях) */
+  font-optical-sizing: auto;
+  font-variation-settings: "SOFT" 28, "WONK" 0;
+  font-weight: 420;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+}
+
+/* тільки для гігантських заголовків — тонший елегантний штрих */
+.display--hero {
+  font-weight: 380;
+}
+
+.kicker {
+  font-family: var(--font-body);
+  font-size: 0.74rem;
+  font-weight: 620;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--gold-2);
+}
+
+.lead {
+  font-size: clamp(1.05rem, 1.4vw, 1.25rem);
+  line-height: 1.7;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+/* ── Утиліти ───────────────────────────────────────────────────── */
+.container {
+  width: 100%;
+  max-width: var(--max-w);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Денна (кремова) тема секції */
+.theme-day {
+  background: var(--cream);
+  color: var(--ink);
+}
+.theme-day .lead {
+  color: var(--ink-soft);
+}
+.theme-day .kicker {
+  color: var(--gold-dim);
+}
+
+/* ── Скрол непомітний, але живий ───────────────────────────────── */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+::-webkit-scrollbar-thumb {
+  background: #232b40;
+  border-radius: 5px;
+  border: 2px solid var(--bg);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gold-dim);
+}
+
+/* ── Фокус для клавіатури ──────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* ── Reduced motion ────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .grain {
+    animation: none;
+  }
+}
