@@ -132,6 +132,7 @@ export default function PanoTour() {
   const { t } = useT();
   const hostRef = useRef<HTMLDivElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
+  const viewsRowRef = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
   /* рендер-цикл WebGL живе ЛИШЕ коли секція на/біля екрана */
   const [visible, setVisible] = useState(false);
@@ -305,6 +306,17 @@ export default function PanoTour() {
     return () => document.removeEventListener("fullscreenchange", onFs);
   }, []);
 
+  /* активна мініатюра ракурсу завжди в видимій зоні стрічки */
+  useEffect(() => {
+    const row = viewsRowRef.current;
+    const btn = row?.querySelector<HTMLElement>(".pano__thumb.active");
+    if (!row || !btn) return;
+    row.scrollTo({
+      left: btn.offsetLeft - row.clientWidth / 2 + btn.clientWidth / 2,
+      behavior: "smooth",
+    });
+  }, [viewIdx, roomId]);
+
   const floorRooms = ROOMS.filter((r) => r.floor === mapFloor);
   const floorInfo = t.estate.floors.find((f) => f.id === mapFloor);
 
@@ -379,7 +391,7 @@ export default function PanoTour() {
                 <span className="pano__views-label">
                   {t.pano.angles} · {viewIdx + 1}/{room.views.length}
                 </span>
-                <div className="pano__views-row">
+                <div className="pano__views-row" ref={viewsRowRef}>
                   {room.views.map((v, i) => (
                     <button
                       key={v}
