@@ -10,7 +10,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { motion, AnimatePresence } from "motion/react";
-import { ChevronLeft, ChevronRight, Plus, Minus, Maximize, Maximize2, X } from "lucide-react";
+import { ArrowDown, ChevronLeft, ChevronRight, Plus, Minus, Maximize, Maximize2, X } from "lucide-react";
 import Img from "../Img";
 import { FadeUp } from "../ux/Reveal";
 import { useT } from "../../lib/i18n";
@@ -142,6 +142,8 @@ export default function PanoTour() {
   const [fading, setFading] = useState(false);
   const [mapFloor, setMapFloor] = useState<FloorId>("eg");
   const [planOpen, setPlanOpen] = useState(false);
+  /* точки на плані пульсують, поки користувач не клікнув жодну */
+  const [dotTried, setDotTried] = useState(false);
   const [isFs, setIsFs] = useState(false);
 
   const room = ROOMS.find((r) => r.id === roomId)!;
@@ -442,6 +444,11 @@ export default function PanoTour() {
 
           {/* ═══ ПЛАН-ПАНЕЛЬ ═══ */}
           <aside className="planpanel">
+            {/* підказка: точки на плані клікабельні */}
+            <div className="planpanel__hint" aria-hidden="true">
+              <span>{t.pano.planHint}</span>
+              <ArrowDown size={15} strokeWidth={2} />
+            </div>
             <div className="planpanel__body">
               {/* Перемикач-«будиночок»: бічний розріз, активний поверх висувається */}
               <div className="floorstack" role="tablist" aria-label="Etage">
@@ -491,9 +498,12 @@ export default function PanoTour() {
                       {floorRooms.map((r, i) => (
                         <motion.button
                           key={r.id}
-                          className={`planpanel__dot ${r.id === roomId ? "active" : ""}`}
+                          className={`planpanel__dot ${r.id === roomId ? "active" : ""} ${dotTried ? "" : "pulse"}`}
                           style={{ left: `${r.map.x * 100}%`, top: `${r.map.y * 100}%` }}
-                          onClick={() => goTo(r.id)}
+                          onClick={() => {
+                            setDotTried(true);
+                            goTo(r.id);
+                          }}
                           aria-label={names[r.id]}
                           initial={{ opacity: 0, scale: 0.4 }}
                           animate={{ opacity: 1, scale: 1 }}

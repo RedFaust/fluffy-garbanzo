@@ -1735,6 +1735,28 @@
   border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: 0 30px 80px rgba(3, 5, 10, 0.5);
 }
+/* підказка над планом: точки клікабельні */
+.planpanel__hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  padding: 0.9rem 1.1rem 0.15rem;
+  font-size: 0.8rem;
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  text-align: center;
+  color: #7c6a45;
+}
+.planpanel__hint svg {
+  flex-shrink: 0;
+  color: #a8864e;
+  animation: planhint-bob 1.8s ease-in-out infinite;
+}
+@keyframes planhint-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(5px); }
+}
 .planpanel__body {
   flex: 1;
   min-height: 0;
@@ -1900,6 +1922,18 @@
 .planpanel__dot:hover {
   background: var(--gold-dim);
   z-index: 3;
+}
+/* легка пульсація всіх точок, поки користувач не клікнув жодну */
+.planpanel__dot.pulse:not(.active) {
+  animation: dot-pulse-soft 2.6s ease-out infinite;
+}
+.planpanel__dot.pulse:not(.active):nth-child(odd) {
+  animation-delay: 0.9s;
+}
+@keyframes dot-pulse-soft {
+  0% { box-shadow: 0 2px 8px rgba(22, 27, 40, 0.35), 0 0 0 0 rgba(196, 161, 95, 0.4); }
+  60% { box-shadow: 0 2px 8px rgba(22, 27, 40, 0.35), 0 0 0 10px rgba(196, 161, 95, 0); }
+  100% { box-shadow: 0 2px 8px rgba(22, 27, 40, 0.35), 0 0 0 0 rgba(196, 161, 95, 0); }
 }
 .planpanel__dot.active {
   background: var(--gold);

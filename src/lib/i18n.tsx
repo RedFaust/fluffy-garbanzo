@@ -181,6 +181,7 @@ const de = {
     hint: "Ziehen, um sich umzusehen",
     angles: "Blickwinkel",
     openPlan: "Grundriss groß ansehen",
+    planHint: "Auf einen Punkt tippen — Sie springen direkt in den Raum",
     rooms: {
       vorhof: "Vorhof & Auffahrt",
       wohnen: "Wohnbereich",
@@ -475,6 +476,7 @@ const en: Dict = {
     hint: "Drag to look around",
     angles: "Angles",
     openPlan: "View floor plan large",
+    planHint: "Tap a dot — you jump straight into that room",
     rooms: {
       vorhof: "Forecourt & driveway",
       wohnen: "Living area",
