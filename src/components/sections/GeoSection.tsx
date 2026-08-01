@@ -127,11 +127,26 @@ export default function GeoSection() {
         else el.scrollIntoView({ behavior: "smooth", block: "center" });
       }, 430);
     }
-    /* при зумі — центруємо карту на обраній точці */
+    /* при зумі — автопідгонка: віддаляємось рівно настільки, щоб
+       ВЕСЬ маршрут (будинок → точка, з запасом на дугу й пігулку)
+       помістився у видиму область */
     if (z > 1) {
       const p = POIS.find((pp) => pp.id === id)!;
       const pr = project(p.lat, p.lon);
-      setCenter({ x: pr.x + (p.dx ?? 0), y: pr.y + (p.dy ?? 0) });
+      const px = pr.x + (p.dx ?? 0);
+      const py = pr.y + (p.dy ?? 0);
+      const PAD = 80; // прогин дуги (до 42) + маркери + пігулка
+      const minX = Math.min(H0.x, px) - PAD;
+      const maxX = Math.max(H0.x, px) + PAD;
+      const minY = Math.min(H0.y, py) - PAD;
+      const maxY = Math.max(H0.y, py) + PAD;
+      const nz = clamp(
+        Math.min(PROJ.W / (maxX - minX), PROJ.H / (maxY - minY)),
+        1,
+        3
+      );
+      setZ(nz);
+      setCenter({ x: (minX + maxX) / 2, y: (minY + maxY) / 2 });
     }
   };
 
