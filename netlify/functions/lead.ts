@@ -166,12 +166,20 @@ function readGeo(req: Request, context?: { geo?: NetlifyGeo }): NetlifyGeo | und
 }
 
 export default async (req: Request, context?: { geo?: NetlifyGeo }): Promise<Response> => {
-  if (req.method !== "POST") return json({ ok: false, error: "method_not_allowed" }, 405);
-
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;
+
+  /* GET віддає стан налаштування — щоб перевірити деплой, не надсилаючи
+     нічого в групу. Самих значень не показуємо, лише факт наявності. */
+  if (req.method !== "POST") {
+    return json({ ok: false, error: "method_not_allowed", configured: !!(token && chatId) }, 405);
+  }
+
   if (!token || !chatId) {
-    console.error("[lead] TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID не задані");
+    console.error(
+      "[lead] TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID не задані. " +
+        "Netlify → Site configuration → Environment variables, scope має включати Functions."
+    );
     return json({ ok: false, error: "not_configured" }, 500);
   }
 
