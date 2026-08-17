@@ -177,11 +177,16 @@ const de = {
   pano: {
     kicker: "Der Rundblick",
     title: "Stehen Sie mitten im Raum.",
-    text: "Neun Räume, frei erkundbar: ziehen Sie das Bild, um sich umzuschauen, zoomen Sie hinein — und wechseln Sie unten links die Blickwinkel. Der Grundriss oben rechts zeigt jede Etage; ein Klick auf einen Punkt bringt Sie in den Raum.",
+    /* без «unten links» / «oben rechts»: на телефоні стрічка ракурсів і
+       план стоять під кадром, а не збоку — опис має пасувати обом версіям */
+    text: "Neun Räume, frei erkundbar: ziehen Sie das Bild, um sich umzuschauen, zoomen Sie hinein — und wechseln Sie die Blickwinkel. Der Grundriss zeigt jede Etage; ein Klick auf einen Punkt bringt Sie in den Raum.",
     hint: "Ziehen, um sich umzusehen",
     angles: "Blickwinkel",
     openPlan: "Grundriss groß ansehen",
     planHint: "Auf einen Punkt tippen — Sie springen direkt in den Raum",
+    fsOpen: "Vollbild",
+    fsExit: "Vollbild verlassen",
+    fsKeys: "← → Raum · ↑ ↓ Blickwinkel · Esc schließt",
     rooms: {
       vorhof: "Vorhof & Auffahrt",
       wohnen: "Wohnbereich",
@@ -262,7 +267,9 @@ const de = {
       phone: "Telefon (optional)",
       message: "Ihre Nachricht (optional)",
     },
-    consent: "Ich stimme zu, dass meine Angaben zur Bearbeitung meiner Anfrage verarbeitet werden. Details in der Datenschutzerklärung.",
+    consent:
+      "Ich stimme zu, dass meine Angaben zur Bearbeitung meiner Anfrage verarbeitet und dafür über den Messenger Telegram (Drittland) an uns übermittelt werden. Widerruf jederzeit möglich.",
+    consentLink: "Datenschutzerklärung lesen",
     submit: "Anfrage senden",
     sending: "Wird gesendet …",
     success: "Vielen Dank. Wir melden uns persönlich — in der Regel noch am selben Tag.",
@@ -286,18 +293,129 @@ const de = {
   legal: {
     impressumTitle: "Impressum",
     impressumBody: [
-      "Angaben gemäß § 5 TMG — PLATZHALTER, vor Veröffentlichung ersetzen.",
-      "Aloha Living Immobilien GmbH · Seestraße 121 · 15738 Zeuthen",
-      "Vertreten durch: [Geschäftsführung eintragen]",
-      "Kontakt: [Telefon] · [E-Mail]",
-      "Registereintrag, USt-IdNr. und Aufsichtsbehörde ergänzen.",
+      {
+        h: "Angaben gemäß § 5 DDG",
+        p: [
+          "Aloha Living Immobilien GmbH · Seestraße 121 · 15738 Zeuthen",
+          "Vertreten durch: [Geschäftsführung eintragen]",
+          "Kontakt: [Telefon eintragen] · [E-Mail eintragen]",
+          "Registergericht und Handelsregisternummer: [eintragen]",
+          "Umsatzsteuer-Identifikationsnummer gemäß § 27 a UStG: [eintragen]",
+        ],
+      },
+      {
+        h: "Berufsrechtliche Angaben",
+        p: [
+          "Erlaubnis nach § 34 c Abs. 1 GewO, erteilt durch: [zuständige Behörde eintragen]",
+          "Zuständige Aufsichtsbehörde: [eintragen]",
+        ],
+      },
+      {
+        h: "Streitbeilegung",
+        p: [
+          "Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung bereit: https://ec.europa.eu/consumers/odr",
+          "Wir sind nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.",
+        ],
+      },
+      {
+        h: "Haftung für Inhalte und Links",
+        p: [
+          "Die Inhalte dieser Seiten wurden mit größter Sorgfalt erstellt. Für die Richtigkeit, Vollständigkeit und Aktualität der Inhalte können wir jedoch keine Gewähr übernehmen.",
+          "Für Inhalte externer Links ist stets der jeweilige Anbieter der verlinkten Seiten verantwortlich. Zum Zeitpunkt der Verlinkung waren keine Rechtsverstöße erkennbar.",
+        ],
+      },
+      {
+        h: "Bildnachweise",
+        p: [
+          "Fotografien des Anwesens: [Urheber eintragen]. Einzelne Umgebungsaufnahmen stammen von Wikimedia Commons und sind am jeweiligen Bild mit Urheber und Lizenz gekennzeichnet.",
+        ],
+      },
     ],
     datenschutzTitle: "Datenschutzerklärung",
     datenschutzBody: [
-      "PLATZHALTER — vor Veröffentlichung durch vollständige Datenschutzerklärung ersetzen.",
-      "Diese Website verwendet keine Tracking-Cookies und keine externen Analysedienste.",
-      "Schriften und alle Medien werden lokal gehostet; es findet keine Übertragung an Dritt-CDNs statt.",
-      "Bei Nutzung des Kontaktformulars werden die von Ihnen angegebenen Daten ausschließlich zur Bearbeitung Ihrer Anfrage verarbeitet und an den beauftragten Makler übermittelt.",
+      {
+        p: [
+          "Der Schutz Ihrer persönlichen Daten ist uns wichtig. Nachfolgend informieren wir Sie gemäß Art. 13 und 14 DSGVO darüber, welche Daten beim Besuch dieser Website verarbeitet werden, zu welchem Zweck und auf welcher Rechtsgrundlage.",
+        ],
+      },
+      {
+        h: "1. Verantwortlicher",
+        p: [
+          "Verantwortlich für die Datenverarbeitung auf dieser Website ist:",
+          "Aloha Living Immobilien GmbH · Seestraße 121 · 15738 Zeuthen · [Telefon eintragen] · [E-Mail eintragen]",
+          "Ein Datenschutzbeauftragter ist nicht bestellt, da die gesetzlichen Voraussetzungen hierfür nicht vorliegen. Für Anliegen zum Datenschutz wenden Sie sich bitte an die oben genannte Adresse.",
+        ],
+      },
+      {
+        h: "2. Ihre Rechte",
+        p: [
+          "Sie haben jederzeit das Recht auf Auskunft über die zu Ihrer Person gespeicherten Daten (Art. 15 DSGVO), auf Berichtigung (Art. 16), auf Löschung (Art. 17), auf Einschränkung der Verarbeitung (Art. 18), auf Datenübertragbarkeit (Art. 20) sowie auf Widerspruch gegen die Verarbeitung (Art. 21 DSGVO).",
+          "Soweit die Verarbeitung auf Ihrer Einwilligung beruht, können Sie diese jederzeit mit Wirkung für die Zukunft widerrufen. Die Rechtmäßigkeit der bis zum Widerruf erfolgten Verarbeitung bleibt davon unberührt. Eine formlose Nachricht an die oben genannte Adresse genügt.",
+          "Sie haben außerdem das Recht, sich bei einer Datenschutz-Aufsichtsbehörde zu beschweren (Art. 77 DSGVO). Für uns zuständig ist: Die Landesbeauftragte für den Datenschutz und für das Recht auf Akteneinsicht Brandenburg, Stahnsdorfer Damm 77, 14532 Kleinmachnow.",
+        ],
+      },
+      {
+        h: "3. Hosting und Server-Logfiles",
+        p: [
+          "Diese Website wird bei der Netlify, Inc., 512 2nd Street, Suite 200, San Francisco, CA 94107, USA gehostet. Beim Aufruf der Seiten erhebt der Anbieter automatisch Zugriffsdaten in Server-Logfiles: IP-Adresse, Datum und Uhrzeit des Zugriffs, aufgerufene Datei, übertragene Datenmenge, Referrer-URL sowie Browser- und Betriebssystemkennung.",
+          "Diese Daten sind für den technischen Betrieb und die Sicherheit der Website erforderlich. Rechtsgrundlage ist unser berechtigtes Interesse an einer stabilen und sicheren Bereitstellung (Art. 6 Abs. 1 lit. f DSGVO). Eine Zusammenführung mit anderen Datenquellen findet nicht statt.",
+          "Mit dem Anbieter besteht ein Vertrag über die Auftragsverarbeitung. Da die Verarbeitung auch in den USA erfolgen kann, stützt sich die Übermittlung auf die Standardvertragsklauseln der EU-Kommission beziehungsweise auf das EU-US Data Privacy Framework.",
+        ],
+      },
+      {
+        h: "4. Kontaktformular",
+        p: [
+          "Wenn Sie uns über das Formular kontaktieren, verarbeiten wir die von Ihnen angegebenen Daten: Ihr Name und Ihre E-Mail-Adresse (Pflichtangaben), optional Telefonnummer und Nachricht, sowie Ihr gewähltes Anliegen (Besichtigung, Exposé oder Rückruf).",
+          "Zusätzlich übermitteln wir mit Ihrer Anfrage technische Angaben zum besseren Verständnis des Kontexts: die von Ihnen genutzte Sprachversion, das verwendete Formular, die Geräteart (mobil, Tablet oder Desktop), die aufgerufene Seite sowie das ungefähre Herkunftsland — siehe Abschnitt 6.",
+          "Zweck der Verarbeitung ist ausschließlich die Bearbeitung und Beantwortung Ihrer Anfrage. Rechtsgrundlage ist Ihre Einwilligung (Art. 6 Abs. 1 lit. a DSGVO) sowie, soweit Ihre Anfrage auf den Abschluss eines Vertrages gerichtet ist, Art. 6 Abs. 1 lit. b DSGVO.",
+          "Die Angabe der Daten ist freiwillig. Ohne Name und E-Mail-Adresse können wir Ihre Anfrage jedoch nicht beantworten.",
+          "Zum Schutz vor automatisierten Zusendungen enthält das Formular ein für Sie unsichtbares Feld sowie eine technische Begrenzung der Anzahl der Übermittlungen pro Zeitraum. Es findet keine Auswertung Ihres Verhaltens statt.",
+        ],
+      },
+      {
+        h: "5. Übermittlung Ihrer Anfrage über Telegram",
+        p: [
+          "Ihre Formularanfrage wird von unserem Server als Nachricht in eine private, nicht öffentliche Gruppe des Messengers Telegram zugestellt, damit wir zeitnah reagieren können. Anbieter ist die Telegram FZ-LLC, Business Center 1, Dubai Media City, Vereinigte Arabische Emirate.",
+          "Die Vereinigten Arabischen Emirate sind ein Drittland, für das kein Angemessenheitsbeschluss der EU-Kommission vorliegt. Ein dem europäischen Recht entsprechendes Datenschutzniveau kann daher nicht garantiert werden; insbesondere bestehen möglicherweise weitergehende Zugriffsrechte staatlicher Stellen und eingeschränkte Rechtsschutzmöglichkeiten.",
+          "Die Übermittlung erfolgt ausschließlich auf Grundlage Ihrer ausdrücklichen Einwilligung nach Art. 49 Abs. 1 lit. a DSGVO, die Sie mit dem Absenden des Formulars erteilen. Sie können diese Einwilligung jederzeit für die Zukunft widerrufen. Wünschen Sie keine Übermittlung über Telegram, kontaktieren Sie uns bitte direkt per E-Mail oder Telefon — die Kontaktdaten finden Sie im Impressum.",
+        ],
+      },
+      {
+        h: "6. Ungefähre Standortbestimmung",
+        p: [
+          "Unser Hosting-Anbieter ermittelt anhand Ihrer IP-Adresse das ungefähre Herkunftsland und gegebenenfalls die Region oder Stadt. Diese Angabe wird der Anfrage beigefügt, damit wir einschätzen können, aus welchem Markt sie stammt.",
+          "Es handelt sich um eine grobe, aus der IP-Adresse abgeleitete Schätzung. Eine genaue Standortbestimmung, ein Zugriff auf GPS-Daten oder eine Ortung Ihres Endgeräts finden nicht statt. Die IP-Adresse selbst wird der Anfrage nicht beigefügt.",
+        ],
+      },
+      {
+        h: "7. Google Maps",
+        p: [
+          "Auf der Seite steht eine Kartenansicht von Google Maps zur Verfügung. Diese wird bewusst nicht automatisch geladen: Erst wenn Sie die Kartenansicht ausdrücklich aktivieren, wird eine Verbindung zu Servern von Google hergestellt und Ihre IP-Adresse dorthin übertragen.",
+          "Anbieter ist die Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Irland; eine Übermittlung in die USA an die Google LLC ist möglich. Rechtsgrundlage ist Ihre Einwilligung (Art. 6 Abs. 1 lit. a DSGVO), die Sie durch das Aktivieren der Karte erteilen und durch einen Wechsel zur illustrierten Karte jederzeit beenden können.",
+          "Solange Sie die Kartenansicht nicht aktivieren, werden keinerlei Daten an Google übertragen.",
+        ],
+      },
+      {
+        h: "8. Speicherung im Browser, keine Cookies",
+        p: [
+          "Diese Website setzt keine Cookies und verwendet keine Analyse-, Tracking- oder Werbedienste. Es findet kein Profiling und keine automatisierte Entscheidungsfindung statt.",
+          "Im Session-Speicher Ihres Browsers wird ein einzelner technischer Wert abgelegt, der lediglich vermerkt, ob Ihnen der Bedienhinweis im 3D-Rundgang bereits angezeigt wurde. Er enthält keine personenbezogenen Daten und wird beim Schließen des Browser-Tabs automatisch gelöscht.",
+          "Schriften, Bilder und Videos werden von unserem eigenen Server ausgeliefert. Eine Einbindung externer Content-Delivery-Netzwerke oder Schriftdienste findet nicht statt.",
+        ],
+      },
+      {
+        h: "9. Speicherdauer",
+        p: [
+          "Server-Logfiles werden nach kurzer Zeit automatisch gelöscht, soweit sie nicht ausnahmsweise zur Aufklärung eines Sicherheitsvorfalls benötigt werden.",
+          "Anfragen aus dem Kontaktformular löschen wir, sobald sie abschließend bearbeitet sind und keine gesetzlichen Aufbewahrungspflichten entgegenstehen. Führt Ihre Anfrage zu einem Vertragsverhältnis, gelten die handels- und steuerrechtlichen Aufbewahrungsfristen von sechs beziehungsweise zehn Jahren.",
+        ],
+      },
+      {
+        h: "10. Stand dieser Erklärung",
+        p: [
+          "Diese Datenschutzerklärung gilt ab dem Zeitpunkt der Veröffentlichung dieser Website. Bei Änderungen an der Website oder an den eingesetzten Diensten passen wir sie entsprechend an.",
+        ],
+      },
     ],
     close: "Schließen",
   },
@@ -477,6 +595,9 @@ const en: Dict = {
     angles: "Angles",
     openPlan: "View floor plan large",
     planHint: "Tap a dot — you jump straight into that room",
+    fsOpen: "Fullscreen",
+    fsExit: "Exit fullscreen",
+    fsKeys: "← → Room · ↑ ↓ Angle · Esc closes",
     rooms: {
       vorhof: "Forecourt & driveway",
       wohnen: "Living area",
@@ -534,7 +655,8 @@ const en: Dict = {
       ["Efficiency class", "A"],
       ["Main energy source", "Air-source heat pump"],
       ["Systems built", "2022"],
-      ["Issued", "11.12.2025 · valid until 10.12.2035"],
+      /* не 11.12.2025: в англійській це читається і як 12 листопада */
+      ["Issued", "11 Dec 2025 · valid until 10 Dec 2035"],
     ],
     note: "This property is marketed under an exclusive brokerage mandate. All information without guarantee; the notarised purchase contract prevails.",
   },
@@ -557,7 +679,9 @@ const en: Dict = {
       phone: "Phone (optional)",
       message: "Your message (optional)",
     },
-    consent: "I agree that my details will be processed to handle my enquiry. Details in the privacy policy.",
+    consent:
+      "I agree that my details may be processed to handle my enquiry and transmitted to us for that purpose via the Telegram messenger (third country). Withdrawable at any time.",
+    consentLink: "Read the privacy policy",
     submit: "Send enquiry",
     sending: "Sending …",
     success: "Thank you. We will be in touch personally — usually the same day.",
@@ -581,18 +705,129 @@ const en: Dict = {
   legal: {
     impressumTitle: "Imprint",
     impressumBody: [
-      "Information according to § 5 TMG — PLACEHOLDER, replace before publishing.",
-      "Aloha Living Immobilien GmbH · Seestraße 121 · 15738 Zeuthen",
-      "Represented by: [add management]",
-      "Contact: [phone] · [email]",
-      "Add register entry, VAT ID and supervisory authority.",
+      {
+        h: "Information pursuant to § 5 DDG",
+        p: [
+          "Aloha Living Immobilien GmbH · Seestraße 121 · 15738 Zeuthen · Germany",
+          "Represented by: [add management]",
+          "Contact: [add phone] · [add email]",
+          "Register court and commercial register number: [add]",
+          "VAT identification number pursuant to § 27 a UStG: [add]",
+        ],
+      },
+      {
+        h: "Professional regulations",
+        p: [
+          "Licence under § 34 c (1) of the German Trade Regulation Act, issued by: [add competent authority]",
+          "Competent supervisory authority: [add]",
+        ],
+      },
+      {
+        h: "Dispute resolution",
+        p: [
+          "The European Commission provides a platform for online dispute resolution: https://ec.europa.eu/consumers/odr",
+          "We are neither willing nor obliged to take part in dispute resolution proceedings before a consumer arbitration board.",
+        ],
+      },
+      {
+        h: "Liability for content and links",
+        p: [
+          "The content of these pages has been compiled with the greatest care. We cannot, however, guarantee that it is accurate, complete or up to date.",
+          "The respective provider is always responsible for the content of external links. No legal infringements were apparent at the time the links were set.",
+        ],
+      },
+      {
+        h: "Image credits",
+        p: [
+          "Photographs of the property: [add author]. Individual photographs of the surroundings are taken from Wikimedia Commons and are credited with author and licence on the image itself.",
+        ],
+      },
     ],
     datenschutzTitle: "Privacy policy",
     datenschutzBody: [
-      "PLACEHOLDER — replace with a full privacy policy before publishing.",
-      "This website uses no tracking cookies and no external analytics services.",
-      "Fonts and all media are hosted locally; nothing is transferred to third-party CDNs.",
-      "When you use the contact form, the data you provide is processed solely to handle your enquiry and forwarded to the appointed broker.",
+      {
+        p: [
+          "Protecting your personal data matters to us. In accordance with Articles 13 and 14 GDPR, this notice explains which data we process when you visit this website, for what purpose and on what legal basis.",
+        ],
+      },
+      {
+        h: "1. Controller",
+        p: [
+          "The controller responsible for data processing on this website is:",
+          "Aloha Living Immobilien GmbH · Seestraße 121 · 15738 Zeuthen · Germany · [add phone] · [add email]",
+          "No data protection officer has been appointed, as the statutory requirements for doing so are not met. For any data protection matters, please write to the address above.",
+        ],
+      },
+      {
+        h: "2. Your rights",
+        p: [
+          "You have the right at any time to obtain information about the data we hold about you (Art. 15 GDPR), to have it rectified (Art. 16), erased (Art. 17) or its processing restricted (Art. 18), to data portability (Art. 20) and to object to processing (Art. 21 GDPR).",
+          "Where processing is based on your consent, you may withdraw that consent at any time with effect for the future. This does not affect the lawfulness of processing carried out before withdrawal. An informal message to the address above is sufficient.",
+          "You also have the right to lodge a complaint with a data protection supervisory authority (Art. 77 GDPR). The authority responsible for us is: Die Landesbeauftragte für den Datenschutz und für das Recht auf Akteneinsicht Brandenburg, Stahnsdorfer Damm 77, 14532 Kleinmachnow, Germany.",
+        ],
+      },
+      {
+        h: "3. Hosting and server log files",
+        p: [
+          "This website is hosted by Netlify, Inc., 512 2nd Street, Suite 200, San Francisco, CA 94107, USA. When you open the pages, the provider automatically records access data in server log files: IP address, date and time of access, the file requested, the volume of data transferred, the referrer URL and your browser and operating system identifier.",
+          "This data is necessary for the technical operation and security of the website. The legal basis is our legitimate interest in providing the site reliably and securely (Art. 6 (1) (f) GDPR). The data is not merged with other sources.",
+          "A data processing agreement is in place with the provider. As processing may also take place in the USA, the transfer is based on the European Commission's standard contractual clauses or on the EU-US Data Privacy Framework.",
+        ],
+      },
+      {
+        h: "4. Contact form",
+        p: [
+          "When you contact us via the form, we process the details you provide: your name and email address (required), optionally your phone number and message, and the request you select (viewing, exposé or a call back).",
+          "Together with your enquiry we also transmit technical details that help us understand its context: the language version you used, which form you used, the type of device (mobile, tablet or desktop), the page you were on and your approximate country of origin — see section 6.",
+          "The sole purpose of processing is to handle and answer your enquiry. The legal basis is your consent (Art. 6 (1) (a) GDPR) and, where your enquiry is aimed at entering into a contract, Art. 6 (1) (b) GDPR.",
+          "Providing the data is voluntary. Without your name and email address, however, we cannot reply to your enquiry.",
+          "To guard against automated submissions, the form contains a field that is invisible to you and a technical limit on the number of submissions per period. Your behaviour is not analysed.",
+        ],
+      },
+      {
+        h: "5. Transmission of your enquiry via Telegram",
+        p: [
+          "Your form enquiry is delivered by our server as a message to a private, non-public group on the Telegram messenger so that we can respond promptly. The provider is Telegram FZ-LLC, Business Center 1, Dubai Media City, United Arab Emirates.",
+          "The United Arab Emirates is a third country for which the European Commission has not issued an adequacy decision. A level of data protection equivalent to European law therefore cannot be guaranteed; in particular, state authorities may have broader rights of access and legal remedies may be limited.",
+          "The transfer takes place solely on the basis of your explicit consent under Art. 49 (1) (a) GDPR, which you give when you submit the form. You may withdraw this consent at any time with effect for the future. If you prefer your enquiry not to be transmitted via Telegram, please contact us directly by email or phone — the details are in the imprint.",
+        ],
+      },
+      {
+        h: "6. Approximate location",
+        p: [
+          "Our hosting provider derives your approximate country of origin, and where applicable the region or city, from your IP address. This is attached to the enquiry so that we can tell which market it comes from.",
+          "It is a rough estimate derived from the IP address. No precise positioning, no access to GPS data and no tracking of your device takes place. The IP address itself is not attached to the enquiry.",
+        ],
+      },
+      {
+        h: "7. Google Maps",
+        p: [
+          "A Google Maps view is available on the page. It is deliberately not loaded automatically: only when you explicitly activate the map view is a connection to Google's servers established and your IP address transmitted to them.",
+          "The provider is Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Ireland; a transfer to Google LLC in the USA is possible. The legal basis is your consent (Art. 6 (1) (a) GDPR), which you give by activating the map and can end at any time by switching back to the illustrated map.",
+          "As long as you do not activate the map view, no data whatsoever is transmitted to Google.",
+        ],
+      },
+      {
+        h: "8. Browser storage, no cookies",
+        p: [
+          "This website sets no cookies and uses no analytics, tracking or advertising services. No profiling and no automated decision-making takes place.",
+          "A single technical value is stored in your browser's session storage, recording only whether the operating hint in the 3D tour has already been shown to you. It contains no personal data and is deleted automatically when you close the browser tab.",
+          "Fonts, images and videos are delivered from our own server. No external content delivery networks or font services are embedded.",
+        ],
+      },
+      {
+        h: "9. Retention periods",
+        p: [
+          "Server log files are deleted automatically after a short time, unless they are exceptionally required to investigate a security incident.",
+          "We delete enquiries from the contact form once they have been dealt with conclusively and no statutory retention obligations apply. If your enquiry leads to a contractual relationship, the commercial and tax retention periods of six and ten years respectively apply.",
+        ],
+      },
+      {
+        h: "10. Status of this notice",
+        p: [
+          "This privacy policy applies from the date this website is published. We will update it accordingly if the website or the services it uses change.",
+        ],
+      },
     ],
     close: "Close",
   },

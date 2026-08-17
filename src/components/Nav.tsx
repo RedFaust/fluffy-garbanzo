@@ -11,12 +11,24 @@ export default function Nav() {
   const { lang, setLang, t } = useT();
   const { open } = useContactModal();
   const [solid, setSolid] = useState(false);
+  /* Пройшли ~30% першого екрана — на телефоні хедер перебудовується:
+     назва згортається, перемикач мови їде ліворуч, а праворуч стає
+     та сама CTA, що й на десктопі (див. .nav--compact у CSS). */
+  const [compact, setCompact] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setSolid(window.scrollY > 28);
+    const onScroll = () => {
+      const y = window.scrollY;
+      setSolid(y > 28);
+      setCompact(y > window.innerHeight * 0.3);
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
   }, []);
 
   const links: [string, string][] = [
@@ -27,7 +39,7 @@ export default function Nav() {
   ];
 
   return (
-    <header className={`nav ${solid ? "nav--solid" : ""}`}>
+    <header className={`nav ${solid ? "nav--solid" : ""} ${compact ? "nav--compact" : ""}`}>
       <a href="#top" className="nav__brand">
         Anwesen <em>am Kolberg</em>
       </a>

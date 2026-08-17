@@ -5,6 +5,12 @@
 [build.environment]
   NODE_VERSION = "20"
 
+# Приймач заявок → Telegram. Токен бота — у змінних оточення сайту
+# (TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID), не в репозиторії.
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
 # SPA-фолбек
 [[redirects]]
   from = "/*"

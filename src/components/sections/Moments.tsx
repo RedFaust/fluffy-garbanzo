@@ -229,8 +229,40 @@ function Vignette({
 
 /* ═════════ Вертикальний потік (mobile / reduced motion) ═════════ */
 
+/* Фон сцени: проявляється з повільним відʼїздом (Ken Burns).
+   Анімація скінченна й стартує лише коли рядок у кадрі — жодних
+   вічних композитних шарів у фоні на телефоні. */
+function RowBg({ src }: { src: string }) {
+  const reduced = useReducedMotion();
+  return (
+    <motion.img
+      className="mom__rowbg"
+      src={src}
+      alt=""
+      loading="lazy"
+      decoding="async"
+      initial={reduced ? false : { opacity: 0, scale: 1.18 }}
+      whileInView={{ opacity: 0.42, scale: 1.03 }}
+      viewport={{ once: true, amount: 0.25 }}
+      transition={{
+        opacity: { duration: 1.2, ease: "easeOut" },
+        scale: { duration: 2.8, ease: [0.16, 1, 0.3, 1] },
+      }}
+    />
+  );
+}
+
 function MomentsStatic() {
   const { t } = useT();
+  const reduced = useReducedMotion();
+  /* сцена «вдихає» знизу вгору: спершу кадр, за ним час, далі рядок */
+  const rise = (delay: number) => ({
+    initial: reduced ? false : { opacity: 0, y: 34 },
+    whileInView: { opacity: 1, y: 0 },
+    viewport: { once: true, amount: 0.4 },
+    transition: { duration: 0.85, delay, ease: [0.22, 1, 0.36, 1] as const },
+  });
+
   return (
     <section className="mom mom--static">
       {t.moments.list.map((m, i) => (
@@ -239,34 +271,23 @@ function MomentsStatic() {
           key={i}
           style={{ backgroundColor: MOODS[i].bg, ["--mglow" as string]: MOODS[i].glow }}
         >
-          {MOODS[i].img && (
-            <img className="mom__rowbg" src={MOODS[i].img} alt="" loading="lazy" decoding="async" />
-          )}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.5 }}
-            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <span className="mom__time">{m.time}</span>
-            <p className="mom__text display">{m.line}</p>
-          </motion.div>
+          {MOODS[i].img && <RowBg src={MOODS[i].img!} />}
+          <div>
+            <motion.span className="mom__time" {...rise(0.12)}>
+              {m.time}
+            </motion.span>
+            <motion.p className="mom__text display" {...rise(0.22)}>
+              {m.line}
+            </motion.p>
+          </div>
         </div>
       ))}
       <div
         className="mom__row mom__row--finale"
         style={{ backgroundColor: MOODS[6].bg, ["--mglow" as string]: MOODS[6].glow }}
       >
-        {MOODS[6].img && (
-          <img className="mom__rowbg" src={MOODS[6].img} alt="" loading="lazy" decoding="async" />
-        )}
-        <motion.p
-          className="mom__text display"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-        >
+        {MOODS[6].img && <RowBg src={MOODS[6].img!} />}
+        <motion.p className="mom__text display" {...rise(0.18)}>
           {t.moments.finale}
         </motion.p>
       </div>

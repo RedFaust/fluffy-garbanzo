@@ -1,13 +1,8 @@
 /**
- * Відправка заявки в Telegram через Bot API.
- * Налаштування: src/data/site.ts → telegram.botToken / chatId.
- *
- * ПРИМІТКА ПРО БЕЗПЕКУ: токен бота у клієнтському коді видимий.
- * Для цього лендінгу це усвідомлений компроміс: бот створюється ВИКЛЮЧНО
- * для прийому лідів (жодних прав адміністратора), а спам обмежує honeypot.
- * За бажання пізніше — перенести на Cloudflare Worker (10 хв роботи).
+ * Відправка заявки: клієнт стукає у власну serverless-функцію, а вже
+ * вона говорить із Telegram. Токен бота у браузер не потрапляє —
+ * див. netlify/functions/lead.ts.
  */
-import { site } from "../data/site";
 
 export type Lead = {
   name: string;
@@ -16,47 +11,48 @@ export type Lead = {
   message?: string;
   interest: string;
   lang: string;
+  /** яка саме форма: "section" | "modal" */
+  source: string;
   /** honeypot — має бути порожнім */
   company?: string;
 };
 
+const ENDPOINT = "/.netlify/functions/lead";
+
 export async function sendLead(lead: Lead): Promise<boolean> {
-  // honeypot: боти заповнюють приховане поле — мовчки "успіх"
+  // honeypot: боти заповнюють приховане поле — мовчки «успіх»
   if (lead.company && lead.company.trim() !== "") return true;
 
-  const { botToken, chatId } = site.telegram;
-  if (!botToken || botToken.startsWith("REPLACE")) {
-    console.warn("[telegram] Токен не налаштовано — заявка виведена в консоль:", lead);
-    // у режимі-заглушці вважаємо успіхом, щоб UX можна було тестувати
-    return true;
-  }
-
-  const text = [
-    "🏡 <b>Нова заявка — Anwesen am Kolberg</b>",
-    "",
-    `👤 <b>${esc(lead.name)}</b>`,
-    `✉️ ${esc(lead.email)}`,
-    lead.phone ? `📞 ${esc(lead.phone)}` : null,
-    `🎯 Інтерес: ${esc(lead.interest)}`,
-    lead.message ? `💬 ${esc(lead.message)}` : null,
-    "",
-    `🌐 Мова: ${lead.lang} · ${new Date().toLocaleString("de-DE")}`,
-  ]
-    .filter(Boolean)
-    .join("\n");
+  const payload = {
+    ...lead,
+    /* Referer не передає якір, тож шлях зі #hash шлемо самі */
+    page: typeof location !== "undefined" ? location.pathname + location.hash : "",
+  };
 
   try {
-    const res = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+    const res = await fetch(ENDPOINT, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: chatId, text, parse_mode: "HTML" }),
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(payload),
     });
-    return res.ok;
-  } catch {
+
+    /* Локальний `vite dev` функцій не піднімає (для них потрібен
+       `netlify dev`). Щоб не блокувати перевірку UX — пишемо заявку
+       в консоль і вважаємо успіхом. У проді це не спрацює: там 404
+       на цей шлях означав би зламаний деплой. */
+    if (res.status === 404 && import.meta.env.DEV) {
+      console.info("[lead] функція недоступна в dev — заявка:", payload);
+      return true;
+    }
+
+    if (!res.ok) {
+      console.warn("[lead] помилка відправки:", res.status);
+      return false;
+    }
+    const data = (await res.json()) as { ok?: boolean };
+    return data.ok === true;
+  } catch (e) {
+    console.warn("[lead] мережева помилка:", e);
     return false;
   }
-}
-
-function esc(s: string) {
-  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }

@@ -64,31 +64,35 @@ export default function Abschluss() {
               </div>
             </FadeUp>
 
-            <FadeUp delay={0.16} amount={0.25}>
-              <div className="contact__direct">
-                <span className="kicker" style={{ color: "var(--muted-2)" }}>
-                  {t.contact.or}
-                </span>
-                <a href={site.phoneHref}>
-                  <Phone aria-hidden="true" /> {site.phone}
-                </a>
-                <a href={`mailto:${site.email}`}>
-                  <Mail aria-hidden="true" /> {site.email}
-                </a>
-              </div>
-            </FadeUp>
-
-            <FadeUp delay={0.2} amount={0.25}>
-              <p className="price__legal">{t.price.note}</p>
-            </FadeUp>
           </div>
 
+          {/* Контакти й правова примітка — окремі елементи сітки, а не діти
+              .fin__info: на десктопі вони лишаються в лівій колонці під
+              таблицею, а на телефоні стають під формою (як просив власник). */}
           <FadeUp delay={0.12} amount={0.15} className="fin__formwrap">
             <span className="fin__formcue" aria-hidden="true">
               {t.finale.formCue}
               <ArrowDownRight size={14} />
             </span>
             <LeadForm />
+          </FadeUp>
+
+          <FadeUp delay={0.16} amount={0.25} className="fin__contact">
+            <div className="contact__direct">
+              <span className="kicker" style={{ color: "var(--muted-2)" }}>
+                {t.contact.or}
+              </span>
+              <a href={site.phoneHref}>
+                <Phone aria-hidden="true" /> {site.phone}
+              </a>
+              <a href={`mailto:${site.email}`}>
+                <Mail aria-hidden="true" /> {site.email}
+              </a>
+            </div>
+          </FadeUp>
+
+          <FadeUp delay={0.2} amount={0.25} className="fin__legal">
+            <p className="price__legal">{t.price.note}</p>
           </FadeUp>
         </div>
       </div>

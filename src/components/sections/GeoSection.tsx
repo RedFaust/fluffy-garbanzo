@@ -5,12 +5,13 @@
  * іконки POI з кластеризацією (щільні групи — точки, при зумі — іконки).
  * Вкладка Google Maps: маршрут будинок→POI, свій зум. Без зайвих запитів.
  */
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence, useInView, useReducedMotion } from "motion/react";
 import {
   TrainFront, TramFront, CarFront, Plane, Factory, Landmark, ShoppingBag,
   GraduationCap, HeartPulse, Stethoscope, Waves, Ship, Sailboat, TreePine,
   Droplets, Flag, Palmtree, UtensilsCrossed, MapPin, Plus, Minus,
+  Footprints, Bike,
   type LucideIcon,
 } from "lucide-react";
 import { FadeUp } from "../ux/Reveal";
@@ -51,6 +52,11 @@ const CLUSTERED: Set<string> = (() => {
 })();
 
 const clamp = (v: number, a: number, b: number) => Math.min(Math.max(v, a), b);
+/* центр вікна перегляду: якщо вікно ширше за саму мапу — просто по центру */
+const center1 = (v: number, size: number, total: number) =>
+  size >= total ? total / 2 : clamp(v, size / 2, total - size / 2);
+
+const MODE_ICON = { foot: Footprints, bike: Bike } as const;
 
 export default function GeoSection() {
   const { t, lang } = useT();
@@ -71,18 +77,52 @@ export default function GeoSection() {
   const drag = useRef<{ px: number; py: number; cx: number; cy: number } | null>(null);
   const suppressClick = useRef(false);
 
+  /* пропорції контейнера карти: їх задає CSS (десктоп — як сама мапа,
+     телефон — горизонтальна смуга), viewBox підлаштовується під них */
+  const [mapAR, setMapAR] = useState(PROJ.W / PROJ.H);
+  useLayoutEffect(() => {
+    const read = () => {
+      const el = svgRef.current?.parentElement;
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      if (r.width > 0 && r.height > 0) setMapAR(r.width / r.height);
+    };
+    read();
+    window.addEventListener("resize", read);
+    window.addEventListener("orientationchange", read);
+    return () => {
+      window.removeEventListener("resize", read);
+      window.removeEventListener("orientationchange", read);
+    };
+  }, []);
+
+  /* базове вікно перегляду при z = 1.
+     Горизонтальний контейнер (телефон) отримує вужче вікно: карта
+     малюється крупніше, а до дальших точок вона доїжджає при виборі. */
+  const base = useMemo(() => {
+    const full = PROJ.W / PROJ.H;
+    const w = mapAR > full + 0.05 ? Math.min(PROJ.W, 640) : PROJ.H * mapAR;
+    return { w, h: w / mapAR };
+  }, [mapAR]);
+
   /* видима область (viewBox) з кламповим центром */
   const vb = useMemo(() => {
-    const w = PROJ.W / z;
-    const h = PROJ.H / z;
-    const cx = clamp(center.x, w / 2, PROJ.W - w / 2);
-    const cy = clamp(center.y, h / 2, PROJ.H - h / 2);
+    const w = base.w / z;
+    const h = base.h / z;
+    const cx = center1(center.x, w, PROJ.W);
+    const cy = center1(center.y, h, PROJ.H);
     return { x: cx - w / 2, y: cy - h / 2, w, h };
-  }, [z, center]);
+  }, [z, center, base]);
 
-  /* авто-прогулянка картою, поки користувач не втрутився */
+  /* вікно вужче за мапу — тобто телефонна смуга, де карта їздить за вибором */
+  const cropped = base.w < PROJ.W - 1;
+
+  /* Авто-прогулянка картою, поки користувач не втрутився.
+     На телефоні вимкнена: там вікно вужче, тож кожен крок смикав би
+     карту до наступної точки. Закріплена карта + список під нею й так
+     достатньо ясно показують, що пункти клікабельні. */
   useEffect(() => {
-    if (touched || reduced || !inView || view !== "art" || z !== 1) return;
+    if (touched || reduced || !inView || view !== "art" || z !== 1 || cropped) return;
     const iv = setInterval(() => {
       setActiveId((prev) => {
         const i = POIS.findIndex((p) => p.id === prev);
@@ -90,7 +130,7 @@ export default function GeoSection() {
       });
     }, 4200);
     return () => clearInterval(iv);
-  }, [touched, reduced, inView, view, z]);
+  }, [touched, reduced, inView, view, z, cropped]);
 
   const active = POIS.find((p) => p.id === activeId)!;
   const h = H0;
@@ -123,24 +163,41 @@ export default function GeoSection() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeId, ap.x, ap.y, h.x, h.y]);
 
+  /* тримаємо в кадрі і будинок, і активну точку. На десктопі вікно
+     дорівнює всій мапі, тож клампи гасять це — вигляд не змінюється;
+     на телефоні (вужче вікно) карта сама наводиться на обрану точку. */
+  useEffect(() => {
+    if (z !== 1) return;
+    const mx = (H0.x + ap.x) / 2;
+    const my = (H0.y + ap.y) / 2;
+    setCenter((c) => (Math.abs(c.x - mx) < 0.5 && Math.abs(c.y - my) < 0.5 ? c : { x: mx, y: my }));
+  }, [ap.x, ap.y, z]);
+
   const pick = (id: string, fromMap = false) => {
     if (fromMap && suppressClick.current) return;
     setTouched(true);
     setActiveId(id);
-    /* клік по карті → прокручуємо список до пункту, щоб відкриту вкладку було
-       видно. Чекаємо, поки попередня розкривашка згорнеться (вона зсуває
-       контент), і міряємо позицію заново — інакше промах повз ціль. */
-    if (fromMap) {
+    /* Підводимо пункт на місце, щоб було видно і сам рядок, і що розкрилось.
+       На телефоні — одразу під закріплену карту: інакше рядок ховається за
+       нею, щойно попередня розкривашка згортається й тягне список угору.
+       На десктопі (клік по карті) — по центру екрана, як і раніше.
+       Чекаємо, поки згорнеться попередня вкладка: вона зсуває контент. */
+    if (fromMap || cropped) {
       window.setTimeout(() => {
         const el = itemRefs.current[id];
         if (!el) return;
+        const col = svgRef.current?.parentElement?.parentElement;
+        const top =
+          cropped && col
+            ? (parseFloat(getComputedStyle(col).top) || 0) + col.offsetHeight + 14
+            : window.innerHeight / 2 - el.offsetHeight / 2;
         const lenis = (window as unknown as { __lenis?: { scrollTo: (t: HTMLElement, o?: object) => void } }).__lenis;
-        if (lenis)
-          lenis.scrollTo(el, {
-            offset: -(window.innerHeight / 2 - el.offsetHeight / 2),
-            duration: 0.9,
+        if (lenis) lenis.scrollTo(el, { offset: -top, duration: 0.9 });
+        else
+          window.scrollTo({
+            top: el.getBoundingClientRect().top + window.scrollY - top,
+            behavior: "smooth",
           });
-        else el.scrollIntoView({ behavior: "smooth", block: "center" });
       }, 430);
     }
     /* при зумі — просто віддаляємось до повного огляду:
@@ -189,8 +246,10 @@ export default function GeoSection() {
     else setGz((v) => clamp(v - 1, 8, 16));
   };
 
-  const dist = (p: typeof active) =>
-    `${p.min} ${t.geo.min}${p.mode === "foot" ? ` ${t.geo.byFoot}` : p.mode === "bike" ? ` ${t.geo.byBike}` : ""}`;
+  /* спосіб пересування словами — для пігулки на карті й для скрінрідерів */
+  const modeWord = (p: typeof active) =>
+    p.mode === "foot" ? ` ${t.geo.byFoot}` : p.mode === "bike" ? ` ${t.geo.byBike}` : "";
+  const dist = (p: typeof active) => `${p.min} ${t.geo.min}${modeWord(p)}`;
 
   /* пігулка відносно видимої області, з клампом до країв */
   const pillLeft = clamp(((ap.x - vb.x) / vb.w) * 100, 14, 86);
@@ -221,6 +280,7 @@ export default function GeoSection() {
                 </FadeUp>
                 {POIS.filter((p) => p.cat === cat).map((p, i) => {
                   const Icon = ICONS[p.icon] ?? MapPin;
+                  const Mode = MODE_ICON[p.mode as keyof typeof MODE_ICON] ?? CarFront;
                   const on = p.id === activeId;
                   return (
                     <FadeUp key={p.id} delay={i * 0.05} amount={0.2}>
@@ -236,7 +296,12 @@ export default function GeoSection() {
                           <Icon size={17} strokeWidth={1.7} />
                         </span>
                         <span className="geo__item-name">{p.name[lang]}</span>
-                        <span className="geo__item-chip">{dist(p)}</span>
+                        {/* коротко: іконка способу + хвилини. Слова «zu Fuß»
+                            з'їдали пів рядка й ламали назву на два рядки */}
+                        <span className="geo__item-chip" aria-label={dist(p)}>
+                          <Mode size={12} strokeWidth={2.1} aria-hidden="true" />
+                          {p.min} {t.geo.min}
+                        </span>
                       </button>
                       <AnimatePresence initial={false}>
                         {on && (

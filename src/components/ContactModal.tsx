@@ -57,7 +57,7 @@ export default function ContactModal() {
             <h3 className="cmodal__title display">{t.contactModal.title}</h3>
             <p className="cmodal__text">{t.contactModal.text}</p>
 
-            <LeadForm defaultInterest={state.interest} autoFocus />
+            <LeadForm defaultInterest={state.interest} autoFocus source="modal" />
 
             <div className="cmodal__direct">
               <a href={site.phoneHref}>

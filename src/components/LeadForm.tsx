@@ -4,21 +4,26 @@
  */
 import { useEffect, useState, type FormEvent } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Send } from "lucide-react";
+import { Send, Check } from "lucide-react";
 import { useT } from "../lib/i18n";
 import { site } from "../data/site";
 import { sendLead } from "../lib/telegram";
+import { useLegalModal } from "../lib/legalModal";
 
 type Status = "idle" | "sending" | "ok" | "err";
 
 export default function LeadForm({
   defaultInterest = "viewing",
   autoFocus = false,
+  source = "section",
 }: {
   defaultInterest?: string;
   autoFocus?: boolean;
+  /** звідки прийшла заявка — видно в повідомленні Telegram */
+  source?: "section" | "modal";
 }) {
   const { t, lang } = useT();
+  const { open: openLegal } = useLegalModal();
   const [interest, setInterest] = useState(defaultInterest);
   const [status, setStatus] = useState<Status>("idle");
   const [consent, setConsent] = useState(false);
@@ -28,7 +33,9 @@ export default function LeadForm({
   const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (status === "sending") return;
-    const fd = new FormData(e.currentTarget);
+    /* форму беремо ДО await: після нього e.currentTarget уже null */
+    const form = e.currentTarget;
+    const fd = new FormData(form);
     const interestLabel =
       t.contact.interest.options.find((o) => o.id === interest)?.label ?? interest;
 
@@ -41,8 +48,15 @@ export default function LeadForm({
       company: String(fd.get("company") ?? ""),
       interest: interestLabel,
       lang,
+      source,
     });
     setStatus(ok ? "ok" : "err");
+    /* після успіху чистимо форму — інакше повторний сабміт шле дубль */
+    if (ok) {
+      form.reset();
+      setConsent(false);
+      setInterest(defaultInterest);
+    }
   };
 
   return (
@@ -90,7 +104,24 @@ export default function LeadForm({
 
       <label className="form__consent">
         <input type="checkbox" required checked={consent} onChange={(e) => setConsent(e.target.checked)} />
-        <span>{t.contact.consent}</span>
+        <span className="form__consent-box" aria-hidden="true">
+          <Check size={13} strokeWidth={3.2} />
+        </span>
+        <span className="form__consent-text">
+          {t.contact.consent}{" "}
+          {/* окремою кнопкою, а не <a> всередині <label>: клік по посиланню
+              не має перемикати галочку */}
+          <button
+            type="button"
+            className="form__consent-link"
+            onClick={(e) => {
+              e.preventDefault();
+              openLegal("datenschutz");
+            }}
+          >
+            {t.contact.consentLink}
+          </button>
+        </span>
       </label>
 
       <button className="btn btn--gold form__submit" type="submit" disabled={status === "sending"}>

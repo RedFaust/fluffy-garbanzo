@@ -27,3 +27,8 @@ dist-ssr
 .claude/
 docs/
 ds/
+
+# Секрети (токен Telegram-бота тощо) — тільки локально й у Netlify
+.env
+.env.*
+!.env.example

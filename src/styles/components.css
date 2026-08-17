@@ -122,16 +122,26 @@
   justify-content: space-between;
   padding-inline: var(--gutter);
   padding-top: env(safe-area-inset-top, 0);
-  transition: background 0.5s var(--ease-out), backdrop-filter 0.5s;
 }
-.nav--solid {
-  /* щільніший фон + легший блюр: та сама естетика, значно дешевший
-     backdrop-рендер над анімованим hero */
+/* Підкладка окремим шаром: анімуємо лише її opacity.
+   Раніше при скролі переходили background і backdrop-filter — браузер
+   щоразу перебудовував прохід розмиття, і хедер помітно смикався. */
+.nav::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
   background: color-mix(in srgb, var(--bg) 78%, transparent);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--line);
   box-shadow: 0 12px 40px rgba(3, 5, 10, 0.35);
+  opacity: 0;
+  transition: opacity 0.38s var(--ease-out);
+  pointer-events: none;
+}
+.nav--solid::before {
+  opacity: 1;
 }
 .nav__brand {
   font-family: var(--font-display);
@@ -185,19 +195,26 @@
 }
 .nav__lang {
   display: flex;
-  gap: 2px;
+  gap: 1px;
   border: 1px solid var(--line);
   border-radius: 99px;
-  padding: 3px;
+  padding: 2px;
 }
 .nav__lang button {
-  font-size: 0.7rem;
-  letter-spacing: 0.1em;
-  padding: 0.3rem 0.65rem;
+  position: relative;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  padding: 0.24rem 0.55rem;
   border-radius: 99px;
   color: var(--muted);
   transition: all 0.25s;
-  min-height: 28px;
+  min-height: 26px;
+}
+/* сама пігулка дрібна, а зона натиску — пальцева */
+.nav__lang button::after {
+  content: "";
+  position: absolute;
+  inset: -9px -4px;
 }
 .nav__lang button.active {
   background: var(--gold);
@@ -234,9 +251,80 @@
     display: none;
   }
 }
+/* ── Компактний хедер на телефоні ───────────────────────────────
+   На старті — назва ліворуч, мова праворуч. Пройшли ~30% першого
+   екрана: назва тане, мова переїжджає ліворуч, а праворуч проявляється
+   CTA (доти заявку не було де залишити, поки не догортаєш донизу).
+
+   Усі три елементи стоять на своїх кінцевих місцях і рухаються ЛИШЕ
+   через transform/opacity — жодних max-width, display чи justify-content
+   у переходах, бо саме вони й смикали хедер щокадру. */
 @media (max-width: 560px) {
+  .nav__brand,
+  .nav__right {
+    position: absolute;
+    top: 50%;
+    translate: 0 -50%;
+  }
+  .nav__brand {
+    left: var(--gutter);
+    transition: opacity 0.28s var(--ease-out), transform 0.46s var(--ease-out);
+  }
+  .nav--compact .nav__brand {
+    opacity: 0;
+    transform: translateX(-18px);
+    pointer-events: none;
+  }
+  .nav__right {
+    left: var(--gutter);
+    right: var(--gutter);
+    justify-content: flex-start;
+    pointer-events: none; /* назад вмикають самі контроли */
+  }
+  .nav__lang,
   .nav__cta {
-    display: none;
+    pointer-events: auto;
+  }
+  /* мова живе біля лівого поля, а до компакту просто відсунута вправо
+     рівно на вільну ширину: (внутрішня ширина хедера − своя ширина) */
+  .nav__lang {
+    transform: translateX(calc(100vw - 2 * var(--gutter) - 100%));
+    transition: transform 0.46s var(--ease-out);
+    will-change: transform;
+  }
+  .nav--compact .nav__lang {
+    transform: translateX(0);
+  }
+  /* кнопка присутня завжди — інакше поява через display давала ривок */
+  .nav__cta {
+    position: absolute;
+    right: 0;
+    display: inline-flex;
+    padding: 0.58rem 1.05rem;
+    font-size: 0.76rem;
+    gap: 0.35rem;
+    opacity: 0;
+    transform: translateX(16px) scale(0.94);
+    pointer-events: none;
+    transition: opacity 0.3s var(--ease-out) 0.08s,
+      transform 0.46s var(--ease-out) 0.08s;
+  }
+  .nav__cta svg {
+    width: 13px;
+    height: 13px;
+  }
+  .nav--compact .nav__cta {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav::before,
+  .nav__brand,
+  .nav__lang,
+  .nav__cta {
+    transition: none;
   }
 }
 
@@ -645,17 +733,27 @@
   line-height: 1.3;
 }
 .geo__item-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32rem;
+  flex-shrink: 0;
   font-size: 0.66rem;
   font-weight: 650;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   font-variant-numeric: tabular-nums;
   color: var(--muted-2);
   border: 1px solid var(--line);
   border-radius: 999px;
-  padding: 0.28rem 0.62rem;
+  padding: 0.28rem 0.6rem;
   white-space: nowrap;
   transition: all 0.3s;
+}
+.geo__item-chip svg {
+  opacity: 0.7;
+}
+.geo__item--on .geo__item-chip svg {
+  opacity: 0.85;
 }
 .geo__item--on .geo__item-chip {
   color: #14100a;
@@ -720,6 +818,9 @@
 }
 .geo__map {
   position: relative;
+  /* пропорції задає CSS, а viewBox підлаштовується під них (GeoSection.tsx).
+     780/760 — як сама мапа, тобто рівно те, що було раніше */
+  aspect-ratio: 780 / 760;
   border: 1px solid var(--line);
   border-radius: 22px;
   overflow: hidden;
@@ -732,7 +833,7 @@
 .geo__svg {
   display: block;
   width: 100%;
-  height: auto;
+  height: 100%;
   user-select: none;
   -webkit-user-select: none;
 }
@@ -1079,21 +1180,117 @@
   }
 }
 @media (max-width: 980px) {
-  .geo__head,
-  .geo__grid {
+  .geo__head {
     grid-template-columns: 1fr;
   }
-  .geo__mapcol {
-    position: static;
-    order: -1;
+  /* Карта закріплюється вгорі, «розкривашки» їдуть під нею: обрана точка
+     завжди лишається в кадрі — так само, як на десктопі.
+     flex-колонка замість grid: у grid із однією колонкою sticky-елемент
+     замкнений у власному рядку й нікуди не їде. */
+  .geo__grid {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch; /* базовий align-items:start у колонці стискав би по ширині */
+    gap: 1.4rem;
   }
-  /* SVG-текст масштабується з viewBox (~0.43× на 375px) — компенсуємо кегль */
-  .geo__citylabel { font-size: 26px; }
-  .geo__poilabel { font-size: 22px; }
-  .geo__roadlabel { font-size: 20px; }
-  .geo__homelabel { font-size: 23px; }
+  .geo__mapcol {
+    position: sticky;
+    top: var(--nav-h);
+    z-index: 3;
+    order: -1;
+    /* на всю ширину екрана: карта крупніша, і під заокругленими кутами
+       не просвічує список, що скролиться позаду */
+    margin-inline: calc(var(--gutter) * -1);
+  }
+  .geo__map {
+    /* горизонтальна смуга замість квадрата — займає менше висоти,
+       а сама мапа при цьому малюється помітно більшою */
+    aspect-ratio: 7 / 5;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    box-shadow: 0 16px 34px rgba(4, 6, 11, 0.5);
+  }
+  .geo__hint {
+    display: none;
+  }
+
+  /* ── Дрібний HUD карти ──────────────────────────────────────────
+     На телефоні мапа маленька, тож елементи керування мусять бути
+     мінімальними — інакше вони закривають саму карту. Візуал дрібний,
+     а зона натиску лишається пальцевою через прозорий ::after. */
+  .geo__tabs {
+    top: 0.45rem;
+    right: 0.45rem;
+    gap: 0.1rem;
+    padding: 0.16rem;
+    border-radius: 999px;
+  }
+  .geo__tab {
+    position: relative;
+    min-height: 0;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.28rem 0.5rem;
+    font-size: 0.55rem;
+    letter-spacing: 0.09em;
+  }
+  .geo__tab::after {
+    content: "";
+    position: absolute;
+    inset: -11px -3px;
+  }
+  .geo__zoom {
+    right: 0.45rem;
+    bottom: 0.5rem;
+    gap: 0.5rem;
+  }
+  .geo__zoom button {
+    position: relative;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+  }
+  .geo__zoom button svg {
+    width: 14px;
+    height: 14px;
+  }
+  .geo__zoom button::after {
+    content: "";
+    position: absolute;
+    inset: -4px;
+  }
+  .geo__pill {
+    gap: 0;
+    max-width: 46%;
+    padding: 0.28rem 0.45rem;
+    border-radius: 9px;
+  }
+  .geo__pill b {
+    font-size: 0.6rem;
+    line-height: 1.25;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .geo__pill span {
+    font-size: 0.53rem;
+    line-height: 1.25;
+    letter-spacing: 0.06em;
+  }
+  /* трохи більше місця під назву: коротший чип уже звільнив ~55px */
+  .geo__item {
+    gap: 0.65rem;
+    padding-inline: 0.15rem;
+  }
+  /* SVG-текст масштабується з viewBox. Вікно тепер 640 од. на ~390px
+     (0.61×) замість колишніх 780 на 351px (0.45×), тож компенсацію
+     кегля зменшуємо — інакше підписи закривають саму карту. */
+  .geo__citylabel { font-size: 17px; }
+  .geo__poilabel { font-size: 15px; }
+  .geo__roadlabel { font-size: 14px; }
+  .geo__homelabel { font-size: 16px; }
   .geo__scale text,
-  .geo__north text { font-size: 19px; }
+  .geo__north text { font-size: 14px; }
 }
 
 
@@ -1591,17 +1788,57 @@
   height: 100%;
   object-fit: cover;
 }
+/* Фото + стрічка ракурсів у вертикальному фолбеку.
+   .haus__thumbs абсолютна — розрахована на десктопний .haus__main.
+   Тут .hstat__photo не був позиційований, тож стрічка «випадала» аж у низ
+   картки, поверх переваг, і вилазила за екран. Робимо її звичайним рядком
+   одразу під фото, а заокруглення й тінь переносимо на саме зображення. */
 .hstat__photo {
-  border-radius: 18px;
-  overflow: hidden;
+  position: relative;
   margin-bottom: 1.4rem;
-  box-shadow: 0 20px 50px rgba(3, 5, 10, 0.5);
 }
 .hstat__photo > img {
   display: block;
   width: 100%;
   aspect-ratio: 3 / 2;
   object-fit: cover;
+  border-radius: 18px;
+  box-shadow: 0 20px 50px rgba(3, 5, 10, 0.5);
+}
+/* на телефоні кадр вищий — фото головне в цьому блоці */
+@media (max-width: 800px) {
+  .hstat__photo > img {
+    aspect-ratio: 4 / 3;
+  }
+}
+.hstat__photo .haus__thumbs {
+  position: static;
+  margin-top: 0.55rem;
+  width: 100%;
+  gap: 0.4rem;
+  /* скляна підкладка тут зайва: під фото вона лишалась би напівпорожньою
+     на слайдах із двома-трьома кадрами */
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+/* мініатюри ділять рядок порівну — жодного горизонтального скролу */
+.hstat__photo .haus__thumb {
+  flex: 1 1 0;
+  min-width: 0;
+  width: auto;
+  height: auto;
+  max-width: 78px;
+  aspect-ratio: 3 / 2;
+}
+/* зона натиску лишається пальцевою навіть коли мініатюра вузька */
+.hstat__photo .haus__thumb::after {
+  content: "";
+  position: absolute;
+  inset: -7px -2px;
 }
 .hstat__body {
   position: relative;
@@ -1641,10 +1878,6 @@
   height: var(--tour-h, clamp(26rem, 74vh, 46rem));
   box-shadow: 0 40px 110px rgba(3, 5, 10, 0.6);
 }
-.pano--fs {
-  border-radius: 0;
-  height: 100%;
-}
 .pano__stage {
   position: absolute;
   inset: 0;
@@ -1676,6 +1909,143 @@
   z-index: 4;
   background: radial-gradient(115% 100% at 50% 45%, transparent 62%, rgba(4, 6, 11, 0.5) 100%);
 }
+/* ── Разова підказка «затисни й покрути» ──────────────────────────
+   На дотиковому екрані ніщо не натякає, що кадр крутиться пальцем.
+   Рука гойдається вбік, обабіч блимають стрілки, від центру розходяться
+   хвилі. Усе — transform/opacity, тож малює це композитор. */
+.pano__cue {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+  pointer-events: none;
+}
+.pano__cue-puck {
+  position: relative;
+  display: grid;
+  grid-auto-flow: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.8rem 1.05rem;
+  border-radius: 999px;
+  color: #f3ead6;
+  background: rgba(10, 13, 22, 0.58);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(223, 194, 138, 0.4);
+  box-shadow: 0 16px 44px rgba(4, 6, 11, 0.55);
+}
+/* хвилі від дотику */
+.pano__cue-wave {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  border: 1px solid rgba(223, 194, 138, 0.55);
+  animation: pano-cue-wave 2.6s var(--ease-out) infinite;
+}
+.pano__cue-wave--2 {
+  animation-delay: 1.3s;
+}
+@keyframes pano-cue-wave {
+  0% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  70% {
+    opacity: 0;
+    transform: scale(1.45);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.45);
+  }
+}
+.pano__cue-hand {
+  display: grid;
+  place-items: center;
+  color: var(--gold-2);
+  animation: pano-cue-hand 2.6s ease-in-out infinite;
+}
+/* веде вбік і «притискається» на краях — читається як зажав і потягнув */
+@keyframes pano-cue-hand {
+  0%, 100% {
+    transform: translateX(0) scale(1);
+  }
+  15% {
+    transform: translateX(0) scale(0.86);
+  }
+  40% {
+    transform: translateX(-16px) scale(0.86);
+  }
+  70% {
+    transform: translateX(16px) scale(0.86);
+  }
+  85% {
+    transform: translateX(0) scale(1);
+  }
+}
+.pano__cue-arrow {
+  display: grid;
+  place-items: center;
+  color: var(--gold-2);
+  opacity: 0.25;
+}
+.pano__cue-arrow--l {
+  animation: pano-cue-arrow-l 2.6s ease-in-out infinite;
+}
+.pano__cue-arrow--r {
+  animation: pano-cue-arrow-r 2.6s ease-in-out infinite;
+}
+@keyframes pano-cue-arrow-l {
+  0%, 25%, 60%, 100% {
+    opacity: 0.25;
+    transform: translateX(0);
+  }
+  40% {
+    opacity: 1;
+    transform: translateX(-4px);
+  }
+}
+@keyframes pano-cue-arrow-r {
+  0%, 55%, 85%, 100% {
+    opacity: 0.25;
+    transform: translateX(0);
+  }
+  70% {
+    opacity: 1;
+    transform: translateX(4px);
+  }
+}
+.pano__cue-label {
+  padding: 0.34rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 650;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #efe7d6;
+  background: rgba(10, 13, 22, 0.62);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  text-align: center;
+  max-width: 76vw;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pano__cue-wave,
+  .pano__cue-hand,
+  .pano__cue-arrow {
+    animation: none;
+  }
+  .pano__cue-arrow {
+    opacity: 0.85;
+  }
+}
+
 /* контролери */
 .pano__topleft {
   position: absolute;
@@ -1918,6 +2288,14 @@
   padding: 0;
   transition: background 0.2s;
 }
+/* точка маленька навмисно (це мітка на кресленні), але зона натиску
+   мусить бути пальцевою — розширюємо її прозорим псевдоелементом */
+.planpanel__dot::after {
+  content: "";
+  position: absolute;
+  inset: -14px;
+  border-radius: 50%;
+}
 .planpanel__dot:hover {
   background: var(--gold-dim);
   z-index: 3;
@@ -1952,6 +2330,7 @@
 .planpanel__dot.active {
   background: var(--gold);
   animation: dot-pulse 2s infinite;
+  z-index: 4; /* активна точка ловить дотик першою, коли зони сусідів налазять */
 }
 @keyframes dot-pulse {
   0% { box-shadow: 0 0 0 0 rgba(196, 161, 95, 0.55); }
@@ -2144,9 +2523,30 @@
   line-height: 1.6;
   text-align: right;
 }
-@media (max-width: 800px) {
+/* ── Мобільний в'юер ───────────────────────────────────────────────
+   На телефоні HUD не висить поверх кадру: в'юер стає колонкою
+   «квадратний кадр → панель кімнати → стрічка ракурсів». Раніше
+   панель накривала мініатюри, назва кімнати переносилась у два рядки,
+   а стрілки стискались до 35px — менше за мінімальні 44px для пальця.
+   Тільки портрет: альбомний телефон лишається на десктопній розкладці
+   з HUD поверх кадру — там ширини вистачає. */
+@media (max-width: 800px) and (orientation: portrait) {
   .pano {
-    height: clamp(24rem, 72vh, 36rem);
+    height: auto;
+    display: flex;
+    flex-direction: column;
+  }
+  .pano__stage {
+    order: 1;
+    position: relative;
+    inset: auto;
+    width: 100%;
+    /* квадратний кадр замість вузького вертикального */
+    aspect-ratio: 1 / 1;
+    max-height: 62svh;
+    /* вертикальний свайп гортає сторінку, горизонтальний — крутить кадр.
+       З touch-action:none палець «залипав» у в'юері й сторінка не їхала */
+    touch-action: pan-y;
   }
   .pano__hint {
     display: none;
@@ -2158,18 +2558,169 @@
     min-height: 30px;
     font-size: 0.8rem;
   }
-  .pano__views {
-    max-width: calc(100% - 2rem);
+  /* панель кімнати — окремий рядок під кадром, на всю ширину */
+  .pano__bar {
+    order: 2;
+    position: static;
+    transform: none;
+    border: none;
+    border-top: 1px solid var(--line);
+    border-radius: 0;
+    background: rgba(10, 13, 22, 0.86);
+    padding: 0.35rem 0.4rem;
+    gap: 0.3rem;
   }
-  .pano__thumb {
-    width: 64px;
-    height: 44px;
+  .pano__bar .pano__ctl {
+    width: 46px;
+    height: 46px;
+    flex-shrink: 0;
   }
   .pano__name {
-    min-width: 8.5rem;
+    flex: 1;
+    min-width: 0;
+    gap: 0.5rem;
   }
   .pano__name span {
-    font-size: 0.92rem;
+    font-size: 0.95rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .pano__name i {
+    flex-shrink: 0;
+  }
+  /* стрічка ракурсів — під панеллю, більше не перекриває фото */
+  .pano__views {
+    order: 3;
+    position: static;
+    max-width: none;
+    padding: 0.5rem 0.6rem 0.6rem;
+    border-top: 1px solid var(--line);
+    background: rgba(6, 9, 16, 0.9);
+  }
+  .pano__views-label {
+    margin-bottom: 0.35rem;
+    text-shadow: none;
+  }
+  .pano__views-row {
+    gap: 0.4rem;
+    overscroll-behavior-x: contain;
+  }
+  .pano__thumb {
+    width: 72px;
+    height: 50px;
+  }
+}
+
+/* ── PanoTour на весь екран ────────────────────────────────────────
+   Fullscreen API вішається на <html> (див. PanoTour.tsx), а в'юер стає
+   fixed-оверлеєм. Так він лишається звичайним елементом документа —
+   кастомний курсор, підказки й кліки по мініатюрах працюють як завжди.
+   Блок стоїть ПІСЛЯ базових .pano__*, щоб перекривати їх без !important. */
+html.pano-fs,
+html.pano-fs body {
+  overflow: hidden;
+}
+.pano--fs {
+  position: fixed;
+  inset: 0;
+  z-index: 2400; /* над nav (1000) і grain (2000), під модалками (2500+) */
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+.pano--fs .pano__topleft {
+  top: clamp(1rem, 3vh, 2rem);
+  left: clamp(1rem, 2.6vw, 2rem);
+  gap: 0.55rem;
+}
+.pano--fs .pano__ctl {
+  width: 50px;
+  height: 50px;
+}
+.pano--fs .pano__views {
+  left: clamp(1rem, 2.6vw, 2rem);
+  bottom: clamp(5.6rem, 12vh, 7.5rem);
+  max-width: min(56%, 760px);
+}
+.pano--fs .pano__views-label {
+  font-size: 0.7rem;
+  color: var(--muted-2);
+}
+.pano--fs .pano__thumb {
+  width: clamp(76px, 6.6vw, 104px);
+  height: clamp(52px, 4.5vw, 70px);
+}
+.pano--fs .pano__bar {
+  bottom: clamp(1.2rem, 3.4vh, 2.4rem);
+  gap: 0.9rem;
+  padding: 0.5rem;
+}
+.pano--fs .pano__bar .pano__ctl {
+  width: 46px;
+  height: 46px;
+}
+.pano--fs .pano__name span {
+  font-size: 1.2rem;
+}
+.pano--fs .pano__hint {
+  right: clamp(1rem, 2.6vw, 2rem);
+  bottom: clamp(1.4rem, 3.6vh, 2.4rem);
+  max-width: 15rem;
+}
+/* підказка по клавішах — лише у фулскріні */
+.pano__keys {
+  display: block;
+  margin-top: 0.45rem;
+  font-style: normal;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: none;
+  color: var(--muted-2);
+  opacity: 0.85;
+}
+/* Фулскрін на телефоні: колонка лишається, але кадр більший і по центру.
+   Розтягувати кадр на всю висоту не можна — камера вписує панораму
+   ВЕРТИКАЛЬНО, тож на вузькому портреті лишалось би ~30° по горизонталі
+   і фото виглядало сильно наближеним та розмитим. 4:5 дає ~50°. */
+@media (max-width: 800px) and (orientation: portrait) {
+  .pano--fs {
+    justify-content: center;
+  }
+  .pano--fs .pano__stage {
+    aspect-ratio: 4 / 5;
+    max-height: 58svh;
+    flex-shrink: 0;
+    /* у фулскріні сторінка не скролиться — віддаємо жест кадру повністю */
+    touch-action: none;
+  }
+  .pano--fs .pano__topleft {
+    top: max(0.9rem, env(safe-area-inset-top, 0px));
+    left: 0.9rem;
+  }
+  .pano--fs .pano__ctl {
+    width: 46px;
+    height: 46px;
+  }
+  .pano--fs .pano__views {
+    max-width: none;
+    padding: 0.6rem 0.7rem;
+  }
+  .pano--fs .pano__thumb {
+    width: 78px;
+    height: 54px;
+  }
+  .pano--fs .pano__bar {
+    padding: 0.4rem;
+  }
+  .pano--fs .pano__bar .pano__ctl {
+    width: 48px;
+    height: 48px;
+  }
+  .pano--fs .pano__name span {
+    font-size: 1.05rem;
   }
 }
 
@@ -2517,12 +3068,17 @@
 /* вертикальний потік (mobile / reduced) */
 .mom--static .mom__row {
   position: relative;
-  min-height: 62svh;
+  min-height: 68svh;
   display: grid;
   place-items: center;
   text-align: center;
-  padding: 4rem var(--gutter);
+  padding: 4.5rem var(--gutter);
   overflow: hidden;
+}
+/* сусідні сцени перетікають одна в одну: край кадру розчиняється
+   в кольорі доби наступної, без різкої лінії стику */
+.mom--static .mom__row + .mom__row {
+  margin-top: -1px;
 }
 .mom--static .mom__row::before {
   content: "";
@@ -2537,16 +3093,28 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0.38;
+  opacity: 0.42;
+  transform-origin: 50% 45%;
+  will-change: transform, opacity;
 }
+/* краї темніші за середину — сцени зшиваються між собою */
 .mom--static .mom__row::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(7, 10, 18, 0.55), rgba(7, 10, 18, 0.25) 40%, rgba(7, 10, 18, 0.6));
+  background: linear-gradient(
+    180deg,
+    rgba(7, 10, 18, 0.92) 0%,
+    rgba(7, 10, 18, 0.3) 26%,
+    rgba(7, 10, 18, 0.22) 60%,
+    rgba(7, 10, 18, 0.94) 100%
+  );
   pointer-events: none;
 }
-.mom--static .mom__row > * {
+/* :not(.mom__rowbg) — інакше це правило перебивало position:absolute
+   у фонового кадру (однакова вагомість, але нижче за списком), і фото
+   з підкладки перетворювалось на звичайну картинку над текстом */
+.mom--static .mom__row > *:not(.mom__rowbg) {
   position: relative;
   z-index: 2;
 }
@@ -2937,21 +3505,77 @@
   gap: 1rem;
 }
 .form__consent {
+  position: relative;
   display: flex;
   gap: 0.7rem;
   align-items: flex-start;
   font-size: 0.78rem;
   color: var(--muted-2);
-  line-height: 1.5;
+  line-height: 1.55;
   margin: 1.2rem 0 1.4rem;
   cursor: pointer;
 }
+/* Власна галочка в стилістиці сайту: нативний чекбокс лишається на місці
+   (клавіатура, скрінрідери, required-валідація), але візуально схований —
+   малює його .form__consent-box. */
 .form__consent input {
-  margin-top: 0.2rem;
-  accent-color: var(--gold);
-  width: 16px;
-  height: 16px;
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  top: 0.1rem;
+  left: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.form__consent-box {
+  position: relative;
   flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  margin-top: 0.1rem;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  display: grid;
+  place-items: center;
+  color: #14100a;
+  transition: background 0.22s var(--ease-out), border-color 0.22s var(--ease-out);
+}
+.form__consent-box svg {
+  opacity: 0;
+  transform: scale(0.5);
+  transition: opacity 0.18s var(--ease-out), transform 0.24s var(--ease-out);
+}
+.form__consent:hover .form__consent-box {
+  border-color: var(--gold-dim);
+}
+.form__consent input:checked ~ .form__consent-box {
+  background: var(--gold);
+  border-color: var(--gold);
+}
+.form__consent input:checked ~ .form__consent-box svg {
+  opacity: 1;
+  transform: scale(1);
+}
+.form__consent input:focus-visible ~ .form__consent-box {
+  outline: 2px solid var(--gold-2);
+  outline-offset: 2px;
+}
+.form__consent-text {
+  flex: 1;
+  min-width: 0;
+}
+.form__consent-link {
+  color: var(--gold-2);
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  padding: 0;
+  transition: color 0.22s;
+}
+.form__consent-link:hover {
+  color: var(--gold);
 }
 .form__submit {
   width: 100%;
@@ -3197,7 +3821,9 @@
 .legal {
   position: fixed;
   inset: 0;
-  z-index: 2500;
+  /* вище за спливаючу форму (2600) і відео (2700): політику відкривають
+     і з-під галочки всередині самої форми — інакше вона лягала б під неї */
+  z-index: 2800;
   display: grid;
   place-items: center;
   padding: 1.2rem;
@@ -3232,8 +3858,35 @@
   line-height: 1.65;
   margin-bottom: 0.7rem;
 }
+/* Розділи правових текстів: політика довга, тож потрібні заголовки */
+.legal__sec + .legal__sec {
+  margin-top: 1.5rem;
+}
+.legal__card h4 {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold-2);
+  margin-bottom: 0.55rem;
+}
+.legal__card p:last-child {
+  margin-bottom: 0;
+}
 .legal__close {
-  margin-top: 1.2rem;
+  margin-top: 1.6rem;
+}
+@media (max-width: 800px) {
+  .legal__card {
+    padding: 1.4rem 1.2rem;
+    max-height: 82svh;
+  }
+  .legal__card h3 {
+    font-size: 1.25rem;
+  }
+  .legal__card p {
+    font-size: 0.85rem;
+  }
 }
 
 /* ── Кастомний курсор ──────────────────────────────────────────── */
@@ -3471,6 +4124,30 @@ html.has-cursor * {
   gap: clamp(2rem, 4vw, 4rem);
   align-items: start;
 }
+/* На широкому екрані розкладка та сама, що й була: ліворуч ціна →
+   таблиця → контакти → примітка, праворуч форма на всю висоту.
+   У DOM контакти вже після форми — щоб на телефоні впасти під неї. */
+@media (min-width: 961px) {
+  .fin__info {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .fin__formwrap {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+  }
+  .fin__contact {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .fin__legal {
+    grid-column: 1;
+    grid-row: 3;
+  }
+  .fin__grid {
+    row-gap: 0;
+  }
+}
 .fin__info {
   display: flex;
   flex-direction: column;
@@ -3509,5 +4186,205 @@ html.has-cursor * {
   .fin__glow,
   .fin__formcue svg {
     animation: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Пальцеві зони на телефоні
+   На дотику мінімум — 44×44px (Apple HIG) / 48dp (Material). Візуал
+   компонентів не чіпаємо, лише піднімаємо висоту й зону натиску там,
+   де на 390px вона падала до 28–40px.
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 800px) {
+  .nav__brand {
+    padding-block: 0.55rem;
+  }
+  /* адресний рядок над заголовком — на телефоні зайвий шум:
+     та сама інформація є в секції «Lage» */
+  .hero__content > .kicker {
+    display: none;
+  }
+  /* .nav__lang button — дрібна пігулка + ::after-зона натиску,
+     див. блок Nav вище: у хедері великі кнопки виглядали громіздко */
+  /* .geo__tab і .geo__zoom button — дрібний візуал + ::after-зона натиску,
+     див. блок «Дрібний HUD карти» вище: на маленькій мапі великі кнопки
+     закривали саму карту */
+  .haus__thumb {
+    width: 60px;
+    height: 44px;
+  }
+  .planpanel__expand {
+    width: 44px;
+    height: 44px;
+  }
+  .planpanel__room {
+    min-height: 44px;
+    padding: 0.5rem 0.9rem;
+  }
+  .planpanel__rooms {
+    max-height: 9.6rem;
+    gap: 0.5rem;
+  }
+  .form__chip {
+    min-height: 46px;
+  }
+  .form__consent input {
+    width: 20px;
+    height: 20px;
+  }
+  /* мікро-підписи, що несуть зміст (а не декор), не опускаємо нижче ~11px */
+  .geo__cat-name {
+    font-size: 0.75rem;
+  }
+  .geo__item-chip {
+    font-size: 0.7rem;
+  }
+  .geo__item-media figcaption {
+    font-size: 0.62rem;
+  }
+  .pano__views-label {
+    font-size: 0.68rem;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Фінальний блок і кнопки на телефоні
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 800px) {
+  /* велика CTA-кнопка: підпис ламався на два рядки, а стрілка від'їздила
+     в дальній кут — робимо компактну, в один рядок, без важкої заграви */
+  .btn--xl {
+    padding: 0.85rem 1.5rem;
+    font-size: 0.85rem;
+    gap: 0.5rem;
+    box-shadow: 0 8px 24px rgba(196, 161, 95, 0.26);
+  }
+  .haus__cta-note {
+    max-width: 22rem;
+    margin-inline: auto;
+  }
+
+  /* ── Фінальний блок: усе по одній осі, дрібніше ── */
+  .fin__title {
+    font-size: clamp(1.9rem, 8.2vw, 2.5rem);
+  }
+  .fin__lead {
+    font-size: 0.97rem;
+  }
+  /* уся колонка тримає одну ширину й одну вісь — ціна, таблиця, форма,
+     контакти й примітка більше не «розпливаються» по краях */
+  .fin__grid {
+    gap: 1.7rem;
+    max-width: 23rem;
+    margin-inline: auto;
+  }
+  .fin__info {
+    text-align: center;
+    gap: 1.5rem;
+  }
+  .price__value {
+    font-size: clamp(2.1rem, 10.5vw, 2.9rem);
+  }
+  .price__note {
+    font-size: 0.82rem;
+  }
+  /* таблиця GEG: підпис ліворуч, значення праворуч — рівні стовпчики
+     замість рваного краю посередині картки */
+  .fin .energy {
+    text-align: left;
+  }
+  .energy__head {
+    padding: 0.85rem 1rem;
+  }
+  .energy__title {
+    font-size: 0.8rem;
+  }
+  .energy__badge {
+    width: 38px;
+    height: 38px;
+    font-size: 1.1rem;
+    border-radius: 10px;
+  }
+  .energy td {
+    padding: 0.62rem 1rem;
+    font-size: 0.8rem;
+  }
+  .energy td:first-child {
+    width: 54%;
+  }
+  .energy td:last-child {
+    text-align: right;
+  }
+
+  /* форма: вужча й компактніша, по центру колонки */
+  .fin__formwrap {
+    width: 100%;
+  }
+  .fin__formcue {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 0.7rem;
+    font-size: 0.62rem;
+  }
+  .form {
+    padding: 1.2rem 1.1rem;
+    border-radius: 18px;
+  }
+  .form__interest {
+    margin-bottom: 1.1rem;
+    gap: 0.4rem;
+  }
+  .form__interest-label {
+    font-size: 0.65rem;
+  }
+  .form__chip {
+    flex: 1 1 auto;
+    min-height: 44px;
+    padding: 0.45rem 0.8rem;
+    font-size: 0.78rem;
+  }
+  .form__field {
+    margin-bottom: 0.8rem;
+  }
+  .form__field label {
+    font-size: 0.65rem;
+    margin-bottom: 0.3rem;
+  }
+  .form__field input,
+  .form__field textarea {
+    padding: 0.7rem 0.85rem;
+    border-radius: 10px;
+    min-height: 46px; /* font-size лишається 16px — інакше iOS зумить поле */
+  }
+  .form__field textarea {
+    /* rows=3 давало 101px — на телефоні цього забагато */
+    height: 76px;
+    min-height: 76px;
+  }
+  /* поля в рядку вже складені в стовпчик — інтервал задає лише gap,
+     інакше він подвоювався з margin-bottom кожного поля */
+  .form__row {
+    gap: 0.7rem;
+    margin-bottom: 0.8rem;
+  }
+  .form__row .form__field {
+    margin-bottom: 0;
+  }
+  .form__consent {
+    margin: 0.9rem 0 1rem;
+    font-size: 0.74rem;
+  }
+
+  /* контакти — під формою, по центру */
+  .fin__contact .contact__direct {
+    margin-top: 0;
+    align-items: center;
+    text-align: center;
+    gap: 0.55rem;
+  }
+  .fin__legal .price__legal {
+    margin: 0 auto;
+    text-align: center;
+    font-size: 0.74rem;
   }
 }

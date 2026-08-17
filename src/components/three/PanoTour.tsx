@@ -11,6 +11,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { motion, AnimatePresence } from "motion/react";
 import { ArrowDown, ChevronLeft, ChevronRight, Plus, Minus, Maximize, Maximize2, X } from "lucide-react";
+import { Hand } from "lucide-react";
 import Img from "../Img";
 import { FadeUp } from "../ux/Reveal";
 import { useT } from "../../lib/i18n";
@@ -63,6 +64,23 @@ const PLAN_AR: Record<FloorId, number> = { kg: 1.022, eg: 1.43, og: 1.315, dg: 1
 const R = 10;
 const FOV_MIN = 36, FOV_MAX = 66, FOV_BASE = 52;
 const d2r = (d: number) => (d * Math.PI) / 180;
+
+/* ── Повний екран ───────────────────────────────────────────────
+   Fullscreen вмикаємо на <html>, а НЕ на самому в'юері: елемент у
+   fullscreen переїжджає в top-layer, і все, що лишилось поза ним,
+   просто перестає малюватись — кастомний курсор зникав, а кліки
+   «в нікуди» виглядали як «слайди не перемикаються». Тепер у top-layer
+   весь документ, а в'юер розтягуємо звичайним fixed-оверлеєм. */
+type FsDoc = Document & {
+  webkitFullscreenElement?: Element | null;
+  webkitExitFullscreen?: () => void;
+};
+type FsRoot = HTMLElement & { webkitRequestFullscreen?: () => void };
+
+const fsOn = () => {
+  const d = document as FsDoc;
+  return !!(d.fullscreenElement || d.webkitFullscreenElement);
+};
 
 type LookState = {
   yaw: number; pitch: number; fov: number;
@@ -145,6 +163,8 @@ export default function PanoTour() {
   /* точки на плані пульсують, поки користувач не клікнув жодну */
   const [dotTried, setDotTried] = useState(false);
   const [isFs, setIsFs] = useState(false);
+  /* разова підказка «затисни й покрути» — лише на дотикових екранах */
+  const [cue, setCue] = useState(false);
 
   const room = ROOMS.find((r) => r.id === roomId)!;
   const roomIdx = ROOMS.indexOf(room);
@@ -243,6 +263,19 @@ export default function PanoTour() {
     [fading, roomId, loadTex]
   );
 
+  /* На вузькому екрані план лежить ПІД в'юером, тож після вибору кімнати
+     піднімаємо сторінку до кадру — інакше результат кліку поза екраном.
+     На десктопі план стоїть поруч, там скрол лише заважав би. */
+  const scrollToViewer = useCallback(() => {
+    const el = hostRef.current;
+    if (!el || !window.matchMedia("(max-width: 980px)").matches) return;
+    const navH = document.querySelector(".nav")?.getBoundingClientRect().height ?? 68;
+    const y = el.getBoundingClientRect().top + window.scrollY - navH - 10;
+    const lenis = (window as unknown as { __lenis?: { scrollTo: (t: number, o?: object) => void } }).__lenis;
+    if (lenis) lenis.scrollTo(y, { duration: 0.8 });
+    else window.scrollTo({ top: y, behavior: "smooth" });
+  }, []);
+
   const goView = useCallback(
     (i: number) => {
       if (fading || i === viewIdx) return;
@@ -257,6 +290,33 @@ export default function PanoTour() {
     [fading, viewIdx, room, loadTex]
   );
 
+  /* Підказка показується один раз за сесію, коли кадр уже видно:
+     на телефоні нічого не підказує, що фото можна крутити пальцем. */
+  const hideCue = useCallback(() => {
+    setCue(false);
+    try {
+      sessionStorage.setItem("panoCueSeen", "1");
+    } catch {
+      /* приватний режим — переживемо */
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!mounted || !visible) return;
+    if (window.matchMedia("(pointer: fine)").matches) return; // на десктопі є курсор-рука
+    try {
+      if (sessionStorage.getItem("panoCueSeen")) return;
+    } catch {
+      /* ignore */
+    }
+    const show = setTimeout(() => setCue(true), 700);
+    const hide = setTimeout(hideCue, 7500);
+    return () => {
+      clearTimeout(show);
+      clearTimeout(hide);
+    };
+  }, [mounted, visible, hideCue]);
+
   /* drag + wheel */
   useEffect(() => {
     const el = wrapRef.current;
@@ -266,6 +326,7 @@ export default function PanoTour() {
     const down = (e: PointerEvent) => {
       dragging = true;
       look.current.interacted = true;
+      hideCue();
       px = e.clientX; py = e.clientY;
       el.setPointerCapture(e.pointerId);
     };
@@ -289,24 +350,88 @@ export default function PanoTour() {
       el.removeEventListener("pointerup", up);
       el.removeEventListener("pointercancel", up);
     };
-  }, [mounted]);
+  }, [mounted, hideCue]);
 
   const zoom = (dir: 1 | -1) => {
     look.current.interacted = true;
     look.current.fovT = THREE.MathUtils.clamp(look.current.fovT - dir * 7, FOV_MIN, FOV_MAX);
   };
 
-  const toggleFs = () => {
-    const el = hostRef.current;
-    if (!el) return;
-    if (document.fullscreenElement) document.exitFullscreen();
-    else el.requestFullscreen?.();
-  };
-  useEffect(() => {
-    const onFs = () => setIsFs(!!document.fullscreenElement);
-    document.addEventListener("fullscreenchange", onFs);
-    return () => document.removeEventListener("fullscreenchange", onFs);
+  const closeFs = useCallback(() => {
+    setIsFs(false);
+    if (!fsOn()) return;
+    const d = document as FsDoc;
+    if (d.exitFullscreen) void d.exitFullscreen().catch(() => {});
+    else d.webkitExitFullscreen?.();
   }, []);
+
+  const openFs = useCallback(() => {
+    setIsFs(true);
+    /* якщо Fullscreen API недоступний (iOS Safari) — лишається оверлей */
+    const root = document.documentElement as FsRoot;
+    if (root.requestFullscreen) void root.requestFullscreen().catch(() => {});
+    else root.webkitRequestFullscreen?.();
+  }, []);
+
+  const toggleFs = () => (isFs ? closeFs() : openFs());
+
+  /* вихід із фулскріна системними засобами (Esc, F11) — закриваємо оверлей */
+  useEffect(() => {
+    const onFs = () => {
+      if (!fsOn()) setIsFs(false);
+    };
+    document.addEventListener("fullscreenchange", onFs);
+    document.addEventListener("webkitfullscreenchange", onFs);
+    return () => {
+      document.removeEventListener("fullscreenchange", onFs);
+      document.removeEventListener("webkitfullscreenchange", onFs);
+    };
+  }, []);
+
+  /* поки в'юер на весь екран — сторінка під ним не скролиться */
+  useEffect(() => {
+    if (!isFs) return;
+    const lenis = (window as unknown as { __lenis?: { stop(): void; start(): void } }).__lenis;
+    lenis?.stop();
+    document.documentElement.classList.add("pano-fs");
+    return () => {
+      document.documentElement.classList.remove("pano-fs");
+      lenis?.start();
+    };
+  }, [isFs]);
+
+  /* клавіатура у фулскріні: ← → кімнати, ↑ ↓ ракурси, Esc — вихід */
+  useEffect(() => {
+    if (!isFs) return;
+    const onKey = (e: KeyboardEvent) => {
+      const last = room.views.length - 1;
+      switch (e.key) {
+        case "Escape":
+          closeFs();
+          break;
+        case "ArrowLeft":
+          e.preventDefault();
+          goTo(ROOMS[(roomIdx - 1 + ROOMS.length) % ROOMS.length].id);
+          break;
+        case "ArrowRight":
+          e.preventDefault();
+          goTo(ROOMS[(roomIdx + 1) % ROOMS.length].id);
+          break;
+        case "ArrowUp":
+          e.preventDefault();
+          goView(viewIdx > 0 ? viewIdx - 1 : last);
+          break;
+        case "ArrowDown":
+          e.preventDefault();
+          goView(viewIdx < last ? viewIdx + 1 : 0);
+          break;
+        default:
+          return;
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [isFs, closeFs, goTo, goView, roomIdx, viewIdx, room.views.length]);
 
   /* активна мініатюра ракурсу завжди в видимій зоні стрічки */
   useEffect(() => {
@@ -367,7 +492,7 @@ export default function PanoTour() {
                   dpr={[1, 1.75]}
                   camera={{ position: [0, 0, 0.01], fov: FOV_BASE }}
                   gl={{ antialias: true, powerPreference: "high-performance" }}
-                  frameloop={visible ? "always" : "never"}
+                  frameloop={visible || isFs ? "always" : "never"}
                 >
                   <CameraRig look={look} />
                   <CurvedPhoto texture={texture} hfov={room.hfov} look={look} />
@@ -377,12 +502,41 @@ export default function PanoTour() {
               )}
               <div className={`pano__veil ${fading ? "on" : ""}`} aria-hidden="true" />
               <div className="pano__vig" aria-hidden="true" />
+
+              {/* разова підказка: затисни й веди вбік */}
+              <AnimatePresence>
+                {cue && (
+                  <motion.div
+                    className="pano__cue"
+                    aria-hidden="true"
+                    initial={{ opacity: 0, scale: 0.92 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.94, transition: { duration: 0.28 } }}
+                    transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                  >
+                    <span className="pano__cue-puck">
+                      <i className="pano__cue-wave" />
+                      <i className="pano__cue-wave pano__cue-wave--2" />
+                      <span className="pano__cue-arrow pano__cue-arrow--l">
+                        <ChevronLeft size={20} strokeWidth={2.6} />
+                      </span>
+                      <span className="pano__cue-hand">
+                        <Hand size={26} strokeWidth={1.7} />
+                      </span>
+                      <span className="pano__cue-arrow pano__cue-arrow--r">
+                        <ChevronRight size={20} strokeWidth={2.6} />
+                      </span>
+                    </span>
+                    <span className="pano__cue-label">{t.pano.hint}</span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             <div className="pano__topleft">
               <button className="pano__ctl" onClick={() => zoom(1)} aria-label="Zoom in"><Plus size={17} /></button>
               <button className="pano__ctl" onClick={() => zoom(-1)} aria-label="Zoom out"><Minus size={17} /></button>
-              <button className="pano__ctl" onClick={toggleFs} aria-label="Vollbild">
+              <button className="pano__ctl" onClick={toggleFs} aria-label={isFs ? t.pano.fsExit : t.pano.fsOpen}>
                 {isFs ? <X size={17} /> : <Maximize size={16} />}
               </button>
             </div>
@@ -439,7 +593,10 @@ export default function PanoTour() {
               </button>
             </div>
 
-            <span className="pano__hint">{t.pano.hint}</span>
+            <span className="pano__hint">
+              {t.pano.hint}
+              {isFs && <i className="pano__keys">{t.pano.fsKeys}</i>}
+            </span>
           </div>
 
           {/* ═══ ПЛАН-ПАНЕЛЬ ═══ */}
@@ -503,6 +660,7 @@ export default function PanoTour() {
                           onClick={() => {
                             setDotTried(true);
                             goTo(r.id);
+                            scrollToViewer();
                           }}
                           aria-label={names[r.id]}
                           initial={{ opacity: 0, scale: 0.4 }}
@@ -527,7 +685,10 @@ export default function PanoTour() {
                   <button
                     key={r.id}
                     className={`planpanel__room ${r.id === roomId ? "active" : ""}`}
-                    onClick={() => goTo(r.id)}
+                    onClick={() => {
+                      goTo(r.id);
+                      scrollToViewer();
+                    }}
                   >
                     {names[r.id]}
                     <i>{r.views.length} Fotos</i>

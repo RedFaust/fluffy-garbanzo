@@ -1,9 +1,11 @@
 import { lazy, Suspense, useState } from "react";
 import { useLenis } from "./lib/useLenis";
 import { ContactModalProvider } from "./lib/contactModal";
+import { LegalModalProvider } from "./lib/legalModal";
 import Preloader from "./components/Preloader";
 import Cursor from "./components/Cursor";
 import ContactModal from "./components/ContactModal";
+import LegalModal from "./components/LegalModal";
 import Nav from "./components/Nav";
 import Hero from "./components/sections/Hero";
 import GeoSection from "./components/sections/GeoSection";
@@ -21,22 +23,25 @@ export default function App() {
 
   return (
     <ContactModalProvider>
-      <Preloader onDone={() => setReady(true)} />
-      <Cursor />
-      <div className="grain" aria-hidden="true" />
-      <Nav />
-      <ContactModal />
-      <main>
-        <Hero ready={ready} />
-        <Suspense fallback={<div style={{ minHeight: "60svh", background: "var(--bg)" }} />}>
-          <PanoTour />
-        </Suspense>
-        <GeoSection />
-        <Tour />
-        <Moments />
-        <Abschluss />
-      </main>
-      <FooterSec />
+      <LegalModalProvider>
+        <Preloader onDone={() => setReady(true)} />
+        <Cursor />
+        <div className="grain" aria-hidden="true" />
+        <Nav />
+        <ContactModal />
+        <LegalModal />
+        <main>
+          <Hero ready={ready} />
+          <Suspense fallback={<div style={{ minHeight: "60svh", background: "var(--bg)" }} />}>
+            <PanoTour />
+          </Suspense>
+          <GeoSection />
+          <Tour />
+          <Moments />
+          <Abschluss />
+        </main>
+        <FooterSec />
+      </LegalModalProvider>
     </ContactModalProvider>
   );
 }
