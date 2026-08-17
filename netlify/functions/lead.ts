@@ -165,20 +165,45 @@ function readGeo(req: Request, context?: { geo?: NetlifyGeo }): NetlifyGeo | und
   }
 }
 
+/* Основні імена змінних плюс кілька поширених варіантів написання:
+   через одну літеру в назві заявки мовчки не доходили б. */
+const pick = (...names: string[]) => {
+  for (const n of names) {
+    const v = process.env[n]?.trim();
+    if (v) return v;
+  }
+  return "";
+};
+
+/** Імена наявних змінних, схожих на телеграмні — лише у приватний лог */
+const suspects = () =>
+  Object.keys(process.env).filter((k) => /telegram|bot|chat/i.test(k));
+
 export default async (req: Request, context?: { geo?: NetlifyGeo }): Promise<Response> => {
-  const token = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_CHAT_ID;
+  const token = pick("TELEGRAM_BOT_TOKEN", "TELEGRAM_TOKEN", "BOT_TOKEN");
+  const chatId = pick("TELEGRAM_CHAT_ID", "TELEGRAM_CHAT", "CHAT_ID");
 
   /* GET віддає стан налаштування — щоб перевірити деплой, не надсилаючи
      нічого в групу. Самих значень не показуємо, лише факт наявності. */
   if (req.method !== "POST") {
-    return json({ ok: false, error: "method_not_allowed", configured: !!(token && chatId) }, 405);
+    return json(
+      {
+        ok: false,
+        error: "method_not_allowed",
+        configured: !!(token && chatId),
+        hasToken: !!token,
+        hasChatId: !!chatId,
+      },
+      405
+    );
   }
 
   if (!token || !chatId) {
     console.error(
-      "[lead] TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID не задані. " +
-        "Netlify → Site configuration → Environment variables, scope має включати Functions."
+      `[lead] не задано: ${!token ? "TELEGRAM_BOT_TOKEN " : ""}${!chatId ? "TELEGRAM_CHAT_ID" : ""}`.trim() +
+        ". Netlify → Site configuration → Environment variables; у Scopes має бути позначено Functions, " +
+        "у Deploy contexts — All. Схожі наявні змінні: " +
+        (suspects().join(", ") || "жодної")
     );
     return json({ ok: false, error: "not_configured" }, 500);
   }
