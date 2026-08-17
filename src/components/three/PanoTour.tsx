@@ -290,32 +290,27 @@ export default function PanoTour() {
     [fading, viewIdx, room, loadTex]
   );
 
-  /* Підказка показується один раз за сесію, коли кадр уже видно:
-     на телефоні нічого не підказує, що фото можна крутити пальцем. */
-  const hideCue = useCallback(() => {
-    setCue(false);
-    try {
-      sessionStorage.setItem("panoCueSeen", "1");
-    } catch {
-      /* приватний режим — переживемо */
-    }
-  }, []);
+  /* Підказка «затисни й покрути»: раз на кожне завантаження сторінки,
+     і на телефоні, і на десктопі. Нічого в браузері не запам'ятовуємо —
+     лічильник живе в ref, тобто скидається при перезавантаженні. */
+  const hideCue = useCallback(() => setCue(false), []);
+  const cueShown = useRef(false);
 
   useEffect(() => {
-    if (!mounted || !visible) return;
-    if (window.matchMedia("(pointer: fine)").matches) return; // на десктопі є курсор-рука
-    try {
-      if (sessionStorage.getItem("panoCueSeen")) return;
-    } catch {
-      /* ignore */
-    }
-    const show = setTimeout(() => setCue(true), 700);
-    const hide = setTimeout(hideCue, 7500);
-    return () => {
-      clearTimeout(show);
-      clearTimeout(hide);
-    };
-  }, [mounted, visible, hideCue]);
+    if (!mounted || !visible || cueShown.current) return;
+    const id = setTimeout(() => {
+      cueShown.current = true;
+      setCue(true);
+    }, 700);
+    return () => clearTimeout(id);
+  }, [mounted, visible]);
+
+  /* сама підказка живе ~7 с — або зникає від першого дотику до кадру */
+  useEffect(() => {
+    if (!cue) return;
+    const id = setTimeout(() => setCue(false), 7000);
+    return () => clearTimeout(id);
+  }, [cue]);
 
   /* drag + wheel */
   useEffect(() => {

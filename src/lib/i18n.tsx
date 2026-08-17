@@ -396,10 +396,10 @@ const de = {
         ],
       },
       {
-        h: "8. Speicherung im Browser, keine Cookies",
+        h: "8. Keine Cookies, keine Speicherung im Browser",
         p: [
           "Diese Website setzt keine Cookies und verwendet keine Analyse-, Tracking- oder Werbedienste. Es findet kein Profiling und keine automatisierte Entscheidungsfindung statt.",
-          "Im Session-Speicher Ihres Browsers wird ein einzelner technischer Wert abgelegt, der lediglich vermerkt, ob Ihnen der Bedienhinweis im 3D-Rundgang bereits angezeigt wurde. Er enthält keine personenbezogenen Daten und wird beim Schließen des Browser-Tabs automatisch gelöscht.",
+          "Es werden auch keine Daten im lokalen Speicher oder im Session-Speicher Ihres Browsers abgelegt. Ihre Spracheinstellung gilt nur für den aktuellen Seitenaufruf und wird nicht gespeichert.",
           "Schriften, Bilder und Videos werden von unserem eigenen Server ausgeliefert. Eine Einbindung externer Content-Delivery-Netzwerke oder Schriftdienste findet nicht statt.",
         ],
       },
@@ -808,10 +808,10 @@ const en: Dict = {
         ],
       },
       {
-        h: "8. Browser storage, no cookies",
+        h: "8. No cookies, no browser storage",
         p: [
           "This website sets no cookies and uses no analytics, tracking or advertising services. No profiling and no automated decision-making takes place.",
-          "A single technical value is stored in your browser's session storage, recording only whether the operating hint in the 3D tour has already been shown to you. It contains no personal data and is deleted automatically when you close the browser tab.",
+          "Nor is any data placed in your browser's local or session storage. Your language choice applies to the current visit only and is not stored.",
           "Fonts, images and videos are delivered from our own server. No external content delivery networks or font services are embedded.",
         ],
       },
