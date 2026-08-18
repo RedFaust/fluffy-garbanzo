@@ -124,9 +124,11 @@ function buildMessage(
     line,
     `🎯 <b>Interesse:</b> ${esc(lead.interest || "—")}`,
     "",
-    `👤 <b>Name:</b> ${esc(lead.name || "—")}`,
-    `✉️ <b>E-Mail:</b> ${esc(lead.email || "—")}`,
-    lead.phone ? `📞 <b>Telefon:</b> ${esc(lead.phone)}` : null,
+    /* телефон тепер обов'язковий, тож іде першим; імʼя та e-mail
+       показуємо лише коли їх справді залишили */
+    `📞 <b>Telefon:</b> ${esc(lead.phone || "—")}`,
+    lead.name ? `👤 <b>Name:</b> ${esc(lead.name)}` : null,
+    lead.email ? `✉️ <b>E-Mail:</b> ${esc(lead.email)}` : null,
   ];
 
   if (lead.message) {
@@ -229,8 +231,11 @@ export default async (req: Request, context?: { geo?: NetlifyGeo }): Promise<Res
     page: trim(body.page, LIMITS.page),
   };
 
-  if (!lead.name || lead.name.length < 2) return json({ ok: false, error: "name" }, 400);
-  if (!lead.email || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(lead.email))
+  /* Обов'язковий лише телефон — маклер передзвонює. Решта полів
+     необов'язкові, але якщо e-mail вказали — перевіряємо формат. */
+  const digits = (lead.phone ?? "").replace(/\D/g, "");
+  if (digits.length < 6) return json({ ok: false, error: "phone" }, 400);
+  if (lead.email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(lead.email))
     return json({ ok: false, error: "email" }, 400);
 
   const ip =

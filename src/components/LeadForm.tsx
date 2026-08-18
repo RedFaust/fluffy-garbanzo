@@ -78,17 +78,17 @@ export default function LeadForm({
       </div>
 
       <div className="form__field">
-        <label htmlFor="f-name">{t.contact.fields.name} *</label>
-        <input id="f-name" name="name" autoComplete="name" required minLength={2} autoFocus={autoFocus} />
+        <label htmlFor="f-name">{t.contact.fields.name}</label>
+        <input id="f-name" name="name" autoComplete="name" autoFocus={autoFocus} />
       </div>
       <div className="form__row">
         <div className="form__field">
-          <label htmlFor="f-email">{t.contact.fields.email} *</label>
-          <input id="f-email" name="email" type="email" autoComplete="email" required />
+          <label htmlFor="f-email">{t.contact.fields.email}</label>
+          <input id="f-email" name="email" type="email" autoComplete="email" />
         </div>
         <div className="form__field">
-          <label htmlFor="f-phone">{t.contact.fields.phone}</label>
-          <input id="f-phone" name="phone" type="tel" autoComplete="tel" />
+          <label htmlFor="f-phone">{t.contact.fields.phone} *</label>
+          <input id="f-phone" name="phone" type="tel" inputMode="tel" autoComplete="tel" required minLength={6} />
         </div>
       </div>
       <div className="form__field">

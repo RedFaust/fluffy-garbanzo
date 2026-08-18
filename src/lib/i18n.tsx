@@ -262,9 +262,9 @@ const de = {
       ],
     },
     fields: {
-      name: "Ihr Name",
-      email: "E-Mail",
-      phone: "Telefon (optional)",
+      name: "Ihr Name (optional)",
+      email: "E-Mail (optional)",
+      phone: "Telefon",
       message: "Ihre Nachricht (optional)",
     },
     consent:
@@ -674,9 +674,9 @@ const en: Dict = {
       ],
     },
     fields: {
-      name: "Your name",
-      email: "Email",
-      phone: "Phone (optional)",
+      name: "Your name (optional)",
+      email: "Email (optional)",
+      phone: "Phone",
       message: "Your message (optional)",
     },
     consent:
