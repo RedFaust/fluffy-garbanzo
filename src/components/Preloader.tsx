@@ -55,53 +55,77 @@ export default function Preloader({ onDone }: { onDone: () => void }) {
     return () => window.removeEventListener("mousemove", mm);
   }, [mx, my]);
 
-  /* реальний прогрес: hero-фото + шрифти, мінімум 1.8с на церемонію */
+  /* Справжній прогрес за трьома віхами. Раніше шкала рахувалась від часу
+     (мінімум 1.8 с), тож цифри не мали стосунку до завантаження — сайт
+     міг бути готовий за 300 мс і все одно чекав. Тепер кожна віха додає
+     свою частку, а щойно всі закриті — виходимо негайно. */
   useEffect(() => {
     let raf = 0;
     const t0 = performance.now();
-    let assets = false;
+    const MIN = reduced ? 0 : 380; // лише щоб завіса не блимнула
+    const CAP = 4000; // стеля на випадок повільної мережі
+
+    let loaded = 0;
+    const done = (w: number) => () => {
+      loaded += w;
+    };
+
+    /* hero-кадр — найважчий ресурс першого екрана */
     const img = new Image();
     img.src = "/media/still-010-1280.webp";
-    Promise.all([
-      new Promise((res) => {
-        img.onload = img.onerror = res;
-      }),
-      (document as Document & { fonts?: { ready: Promise<unknown> } }).fonts?.ready ??
-        Promise.resolve(),
-    ]).then(() => {
-      assets = true;
+    const hero = new Promise<void>((res) => {
+      img.onload = img.onerror = () => res();
     });
-    const MIN = reduced ? 500 : 1800;
+    hero.then(done(0.45));
 
+    /* шрифти: без них заголовок стрибне після зняття завіси */
+    const fonts =
+      (document as Document & { fonts?: { ready: Promise<unknown> } }).fonts?.ready ??
+      Promise.resolve();
+    fonts.then(done(0.35));
+
+    /* решта критичних ресурсів документа */
+    const page =
+      document.readyState === "complete"
+        ? Promise.resolve()
+        : new Promise<void>((res) =>
+            window.addEventListener("load", () => res(), { once: true })
+          );
+    page.then(done(0.2));
+
+    const finish = () => {
+      if (doneRef.current) return;
+      doneRef.current = true;
+      setLeaving(true);
+      onDone(); // hero-шторки стартують під завісою
+      window.setTimeout(() => setGone(true), 700);
+    };
+
+    /* Вихід вирішують САМІ події завантаження, а не rAF: у фоновій
+       вкладці кадри не малюються, і сайт чекав би до аварійного таймера. */
+    let byTime = 0;
+    Promise.all([hero, fonts, page]).then(() => {
+      byTime = window.setTimeout(finish, Math.max(0, MIN - (performance.now() - t0)));
+    });
+
+    /* rAF лише крутить цифру — на неї нічого не зав'язано */
     const tick = (now: number) => {
+      if (doneRef.current) return;
       const t = now - t0;
-      const base = Math.min(90, (t / MIN) * 90);
-      const target = assets && t >= MIN ? 100 : base;
-      setProg((p) => {
-        const n = p + (target - p) * 0.14;
-        if (n >= 99.2 && !doneRef.current) {
-          doneRef.current = true;
-          setLeaving(true);
-          onDone(); // hero-шторки стартують під завісою
-          window.setTimeout(() => setGone(true), 1000);
-        }
-        return n;
-      });
-      if (!doneRef.current) raf = requestAnimationFrame(tick);
+      /* легкий часовий поріг: шкала рухається навіть поки віхи мовчать */
+      const floor = Math.min(30, (t / 800) * 30);
+      const target = Math.min(96, Math.max(loaded * 100, floor));
+      setProg((p) => p + (target - p) * 0.3);
+      raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
-    /* страховка: фонова вкладка (rAF призупинено) не має блокувати сайт */
-    const hard = window.setTimeout(() => {
-      if (!doneRef.current) {
-        doneRef.current = true;
-        setLeaving(true);
-        onDone();
-        window.setTimeout(() => setGone(true), 1000);
-      }
-    }, 7000);
+
+    /* стеля на випадок, коли якийсь ресурс так і не відповів */
+    const hard = window.setTimeout(finish, CAP);
     return () => {
       cancelAnimationFrame(raf);
       clearTimeout(hard);
+      clearTimeout(byTime);
     };
   }, [onDone, reduced]);
 
@@ -116,7 +140,7 @@ export default function Preloader({ onDone }: { onDone: () => void }) {
       className="preloader"
       initial={false}
       animate={leaving ? { y: "-100%" } : { y: "0%" }}
-      transition={{ duration: 0.85, ease: [0.76, 0, 0.24, 1], delay: leaving ? 0.2 : 0 }}
+      transition={{ duration: 0.6, ease: [0.76, 0, 0.24, 1], delay: leaving ? 0.05 : 0 }}
       aria-hidden="true"
     >
       {/* золотий пил */}
@@ -144,7 +168,7 @@ export default function Preloader({ onDone }: { onDone: () => void }) {
         className="preloader__ringwrap"
         style={para ? { x: ringX, y: ringY, rotateX: ringRX, rotateY: ringRY } : undefined}
         animate={leaving ? { scale: 1.14, opacity: 0 } : { scale: 1, opacity: 1 }}
-        transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
       >
         <svg viewBox="0 0 180 180" className="preloader__ring">
           <defs>
@@ -178,7 +202,7 @@ export default function Preloader({ onDone }: { onDone: () => void }) {
           <motion.div
             initial={{ y: "115%" }}
             animate={{ y: leaving ? "-115%" : "0%" }}
-            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: leaving ? 0 : 0.25 }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: leaving ? 0 : 0.05 }}
           >
             Anwesen <em>am Kolberg</em>
           </motion.div>
@@ -187,7 +211,7 @@ export default function Preloader({ onDone }: { onDone: () => void }) {
           className="preloader__addr"
           initial={{ opacity: 0 }}
           animate={{ opacity: leaving ? 0 : 1 }}
-          transition={{ duration: 0.6, delay: leaving ? 0 : 0.55 }}
+          transition={{ duration: 0.4, delay: leaving ? 0 : 0.18 }}
         >
           Bergstraße 22A · Heidesee · Brandenburg
         </motion.span>
