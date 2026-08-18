@@ -111,7 +111,7 @@ export const HAUS_SLIDES: HausSlide[] = [
     features: [
       { icon: "waves", de: "Salzwasserpool, beheizt", en: "Heated saltwater pool" },
       { icon: "wind", de: "Gegenstromanlage & Massagedüsen", en: "Counter-current & massage jets" },
-      { icon: "sun", de: "Drei Terrassen · 47 m²", en: "Three terraces · 47 m²" },
+      { icon: "sun", de: "Drei Terrassen · über 90 m²", en: "Three terraces · over 90 m²" },
       { icon: "flame", de: "Feuerstelle am Abend", en: "Fire pit in the evening" },
     ],
   },
