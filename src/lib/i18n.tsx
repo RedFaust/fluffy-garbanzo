@@ -91,7 +91,7 @@ const de = {
       {
         floor: "Bergstraße 22A",
         title: "Zwölf Stationen. Ein Zuhause.",
-        text: "Nehmen Sie sich vier Minuten Zeit. Wir gehen durch das Haus wie an einem freien Nachmittag — Raum für Raum, ohne Eile. Der Weg führt nach rechts.",
+        text: "Nehmen Sie sich vier Minuten Zeit. Wir gehen durch das Haus wie an einem freien Nachmittag — Raum für Raum, ohne Eile.",
       },
       {
         floor: "Vorhof · Auffahrt",
@@ -504,7 +504,7 @@ const en: Dict = {
       {
         floor: "Bergstraße 22A",
         title: "Twelve stops. One home.",
-        text: "Take four minutes. We'll walk the house the way you would on a free afternoon — room by room, unhurried. The path leads to the right.",
+        text: "Take four minutes. We'll walk the house the way you would on a free afternoon — room by room, unhurried.",
       },
       {
         floor: "Forecourt · driveway",
