@@ -10,10 +10,10 @@ export const site = {
   price: "1.097.826 €",
   priceNote: { de: "zzgl. Käuferprovision 3,57 % inkl. MwSt.", en: "plus buyer's commission 3.57% incl. VAT" },
 
-  // ── Контакти (ЗАГЛУШКИ — замінити!) ──
-  phone: "+49 30 000 000 00",
-  phoneHref: "tel:+49300000000",
-  email: "kontakt@beispiel-immobilien.de",
+  // ── Контакти ──
+  phone: "+49 (0) 30 54 87 13 40",
+  phoneHref: "tel:+493054871340",
+  email: "vanessa.doerr@alohaliving.de",
   broker: "Aloha Living Immobilien GmbH",
 
   /* Telegram-ліди налаштовуються НЕ тут: токен бота живе у змінних

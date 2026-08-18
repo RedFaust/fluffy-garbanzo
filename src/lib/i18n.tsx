@@ -298,7 +298,7 @@ const de = {
         p: [
           "Aloha Living Immobilien GmbH · Seestraße 121 · 15738 Zeuthen",
           "Vertreten durch: [Geschäftsführung eintragen]",
-          "Kontakt: [Telefon eintragen] · [E-Mail eintragen]",
+          "Telefon: +49 (0) 30 54 87 13 40 · E-Mail: vanessa.doerr@alohaliving.de",
           "Registergericht und Handelsregisternummer: [eintragen]",
           "Umsatzsteuer-Identifikationsnummer gemäß § 27 a UStG: [eintragen]",
         ],
@@ -342,7 +342,7 @@ const de = {
         h: "1. Verantwortlicher",
         p: [
           "Verantwortlich für die Datenverarbeitung auf dieser Website ist:",
-          "Aloha Living Immobilien GmbH · Seestraße 121 · 15738 Zeuthen · [Telefon eintragen] · [E-Mail eintragen]",
+          "Aloha Living Immobilien GmbH · Seestraße 121 · 15738 Zeuthen · +49 (0) 30 54 87 13 40 · vanessa.doerr@alohaliving.de",
           "Ein Datenschutzbeauftragter ist nicht bestellt, da die gesetzlichen Voraussetzungen hierfür nicht vorliegen. Für Anliegen zum Datenschutz wenden Sie sich bitte an die oben genannte Adresse.",
         ],
       },
@@ -710,7 +710,7 @@ const en: Dict = {
         p: [
           "Aloha Living Immobilien GmbH · Seestraße 121 · 15738 Zeuthen · Germany",
           "Represented by: [add management]",
-          "Contact: [add phone] · [add email]",
+          "Phone: +49 (0) 30 54 87 13 40 · Email: vanessa.doerr@alohaliving.de",
           "Register court and commercial register number: [add]",
           "VAT identification number pursuant to § 27 a UStG: [add]",
         ],
@@ -754,7 +754,7 @@ const en: Dict = {
         h: "1. Controller",
         p: [
           "The controller responsible for data processing on this website is:",
-          "Aloha Living Immobilien GmbH · Seestraße 121 · 15738 Zeuthen · Germany · [add phone] · [add email]",
+          "Aloha Living Immobilien GmbH · Seestraße 121 · 15738 Zeuthen · Germany · +49 (0) 30 54 87 13 40 · vanessa.doerr@alohaliving.de",
           "No data protection officer has been appointed, as the statutory requirements for doing so are not met. For any data protection matters, please write to the address above.",
         ],
       },
